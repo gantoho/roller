@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InfiniteRoller 使用文档</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+            background: #0d1117;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+        .doc {
+            max-width: 960px;
+            width: 100%;
+            background: #161b22;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            padding: 3rem 2.5rem;
+            border: 1px solid #30363d;
+        }
+        h1 { font-size: 2rem; margin-bottom: 0.3rem; color: #f0f6fc; }
+        .subtitle { color: #8b949e; font-size: 1rem; margin-bottom: 2.5rem; }
+        h2 {
+            font-size: 1.4rem;
+            margin: 2rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #21262d;
+            color: #f0f6fc;
+        }
+        h3 {
+            font-size: 1.1rem;
+            margin: 1.5rem 0 0.5rem;
+            color: #e6edf3;
+        }
+        p { line-height: 1.7; color: #c9d1d9; margin-bottom: 0.8rem; }
+        ul, ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+        li { line-height: 1.8; color: #c9d1d9; margin-bottom: 0.3rem; }
+        a { color: #58a6ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        code {
+            background: #2d333b;
+            padding: 0.15rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-family: 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace;
+            color: #f778ba;
+        }
+        pre {
+            background: #0d1117;
+            color: #e6edf3;
+            padding: 1.2rem 1.5rem;
+            border-radius: 12px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin: 1rem 0 1.5rem;
+            tab-size: 4;
+            border: 1px solid #21262d;
+        }
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+            border-radius: 0;
+            font-size: inherit;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0 1.5rem;
+            font-size: 0.9rem;
+        }
+        th, td {
+            border: 1px solid #30363d;
+            padding: 0.7rem 1rem;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background: #1c2128;
+            font-weight: 600;
+            color: #e6edf3;
+        }
+        tr:nth-child(even) td { background: #0d1117; }
+        tr:nth-child(odd) td { background: #161b22; }
+        .note {
+            background: #1c1a10;
+            border-left: 4px solid #d29922;
+            padding: 1rem 1.2rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            color: #d9c97c;
+        }
+        .tip {
+            background: #0d2818;
+            border-left: 4px solid #3fb950;
+            padding: 1rem 1.2rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            color: #7ee787;
+        }
+        .demo-box {
+            border: 2px dashed #30363d;
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 1rem 0;
+            background: #0d1117;
+        }
+        .tag {
+            display: inline-block;
+            background: #1c2128;
+            color: #58a6ff;
+            font-size: 0.75rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            margin-right: 0.3rem;
+            font-weight: 500;
+        }
+        .tag-new { background: #0d2818; color: #3fb950; }
+        .tag-important { background: #3d1c02; color: #d29922; }
+        hr { border: none; border-top: 1px solid #21262d; margin: 2rem 0; }
+        @media (max-width: 700px) {
+            body { padding: 1rem; }
+            .doc { padding: 1.5rem 1rem; }
+            table { font-size: 0.8rem; }
+            th, td { padding: 0.5rem 0.6rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="doc">
+
+<h1>InfiniteRoller 使用文档</h1>
+<p class="subtitle">通用无限循环滚动组件 — 基于 rAF + CSS3 transform 硬件加速，无缝无闪烁</p>
+
+<h2>一、简介</h2>
+<p>
+    InfiniteRoller 是一个轻量级、无依赖的 JavaScript 无限循环滚动组件。
+    它通过 <code>requestAnimationFrame</code> + <code>translate3d</code> 实现高性能动画，
+    采用多份 DOM 克隆 + 取模偏移映射策略，保证视觉完全无缝无闪烁。
+</p>
+
+<table>
+    <tr><th>特性</th><th>说明</th></tr>
+    <tr><td>无依赖</td><td>纯原生 JS，无需 jQuery / lodash 等第三方库</td></tr>
+    <tr><td>GPU 加速</td><td>使用 <code>translate3d</code>，仅触发合成层，不触发布局重排</td></tr>
+    <tr><td>完全无缝</td><td>独立 margin + 多份克隆 + 取模偏移，无任何闪烁或跳跃</td></tr>
+    <tr><td>双向支持</td><td>水平 <code>horizontal</code> / 垂直 <code>vertical</code> 方向</td></tr>
+    <tr><td>全面可配</td><td>所有行为均可通过 options 配置，提供合理默认值</td></tr>
+    <tr><td>自动适配</td><td>内置 ResizeObserver，窗口缩放自动重排</td></tr>
+</table>
+
+<h2>二、快速开始</h2>
+
+<h3>2.1 引入文件</h3>
+<pre><code>&lt;script src="infinite-roller.js"&gt;&lt;/script&gt;</code></pre>
+
+<h3>2.2 编写 HTML 结构</h3>
+<p>容器内的直接子元素即为滚动内容项：</p>
+<pre><code>&lt;div id="myRoller" class="scroll-container"&gt;
+    &lt;div&gt;🎯 前端架构&lt;/div&gt;
+    &lt;div&gt;🚀 高性能动画&lt;/div&gt;
+    &lt;div&gt;⚡ 无限循环滚动&lt;/div&gt;
+    &lt;div&gt;🎨 CSS 硬件加速&lt;/div&gt;
+    &lt;div&gt;📦 智能复制拼接&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+
+<h3>2.3 初始化</h3>
+<pre><code>const roller = new InfiniteRoller(
+    document.getElementById('myRoller'),
+    {
+        direction: 'horizontal',
+        gap: 20,
+        speed: 60,
+        autoStart: true,
+        pauseOnHover: true,
+    }
+);</code></pre>
+
+<h3>2.4 基本样式参考</h3>
+<pre><code>.scroll-container {
+    overflow: hidden;    /* 容器必须隐藏溢出 */
+    width: 100%;
+    background: #fff;
+}
+.scroll-item {
+    flex-shrink: 0;      /* 防止 flex 压缩子项 */
+    white-space: nowrap; /* 水平滚动时保持不换行 */
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    text-align: center;
+}</code></pre>
+
+<div class="tip">
+    <strong>提示：</strong>容器 CSS 中的 <code>overflow: hidden</code> 是必需的，组件内部也会自动设置。
+    组件的轨道会使用 <code>display: flex</code> + <code>will-change: transform</code>，无需额外设置。
+</div>
+
+<h2>三、配置项</h2>
+
+<table>
+    <tr><th>配置项</th><th>类型</th><th>默认值</th><th>说明</th></tr>
+    <tr>
+        <td><code>direction</code></td>
+        <td>string</td>
+        <td><code>'horizontal'</code></td>
+        <td>滚动方向：<code>'horizontal'</code>（水平） / <code>'vertical'</code>（垂直）</td>
+    </tr>
+    <tr>
+        <td><code>gap</code></td>
+        <td>number</td>
+        <td><code>20</code></td>
+        <td>每项之间的间距（像素）。使用独立 margin 实现，克隆时自动继承</td>
+    </tr>
+    <tr>
+        <td><code>speed</code></td>
+        <td>number</td>
+        <td><code>50</code></td>
+        <td>滚动速度（像素/秒）</td>
+    </tr>
+    <tr>
+        <td><code>autoStart</code></td>
+        <td>boolean</td>
+        <td><code>true</code></td>
+        <td>初始化后是否自动开始滚动</td>
+    </tr>
+    <tr>
+        <td><code>pauseOnHover</code></td>
+        <td>boolean</td>
+        <td><code>true</code></td>
+        <td>鼠标悬停时是否暂停滚动</td>
+    </tr>
+    <tr>
+        <td><code>contentInsufficient</code> <span class="tag tag-new">v2</span></td>
+        <td>string</td>
+        <td><code>'scroll'</code></td>
+        <td>
+            内容总尺寸小于容器尺寸时的处理策略：<br>
+            <code>'scroll'</code> — 继续滚动，自动复制内容填满容器<br>
+            <code>'stop'</code> — 停止滚动，仅显示原始内容，不做克隆
+        </td>
+    </tr>
+    <tr>
+        <td><code>minCloneMultiplier</code></td>
+        <td>number</td>
+        <td><code>3</code></td>
+        <td>最小克隆倍数，轨道总长至少为原始尺寸的 N 倍。越大越安全，但 DOM 节点越多</td>
+    </tr>
+    <tr>
+        <td><code>stepMaxRatio</code></td>
+        <td>number</td>
+        <td><code>0.5</code></td>
+        <td>单帧最大步长占原始尺寸的比例。防止切换浏览器后台回来后画面跳跃</td>
+    </tr>
+    <tr>
+        <td><code>maxDeltaTime</code></td>
+        <td>number</td>
+        <td><code>0.05</code></td>
+        <td>单帧最大时间差（秒），同上，防止切后台后超大步长</td>
+    </tr>
+    <tr>
+        <td><code>resizeDebounceMs</code></td>
+        <td>number</td>
+        <td><code>100</code></td>
+        <td>窗口 resize 的防抖间隔（毫秒）</td>
+    </tr>
+    <tr>
+        <td><code>precisionThreshold</code></td>
+        <td>number</td>
+        <td><code>1e8</code></td>
+        <td>偏移量超过此值时主动取模，防止浮点精度丢失</td>
+    </tr>
+    <tr>
+        <td><code>cloneIdSuffix</code></td>
+        <td>boolean</td>
+        <td><code>true</code></td>
+        <td>克隆元素时是否自动给 <code>id</code> 属性添加唯一后缀，避免页面内 id 冲突</td>
+    </tr>
+    <tr>
+        <td><code>onPlay</code></td>
+        <td>Function</td>
+        <td><code>null</code></td>
+        <td>开始滚动时的回调函数，<code>this</code> 指向 roller 实例</td>
+    </tr>
+    <tr>
+        <td><code>onPause</code></td>
+        <td>Function</td>
+        <td><code>null</code></td>
+        <td>暂停滚动时的回调函数</td>
+    </tr>
+    <tr>
+        <td><code>onDestroy</code></td>
+        <td>Function</td>
+        <td><code>null</code></td>
+        <td>销毁时的回调函数</td>
+    </tr>
+</table>
+
+<h2>四、API 方法</h2>
+
+<table>
+    <tr><th>方法</th><th>说明</th></tr>
+    <tr>
+        <td><code>.play()</code></td>
+        <td>开始滚动。如果 <code>contentInsufficient === 'stop'</code> 且内容不足，则禁止滚动并自动忽略</td>
+    </tr>
+    <tr>
+        <td><code>.pause()</code></td>
+        <td>暂停滚动，保持当前位置</td>
+    </tr>
+    <tr>
+        <td><code>.stop()</code></td>
+        <td>暂停滚动，并将位置重置到起点</td>
+    </tr>
+    <tr>
+        <td><code>.refresh()</code></td>
+        <td>刷新组件。重新测量尺寸、重新克隆、重置偏移。适用于容器尺寸变化或内容动态增删后调用</td>
+    </tr>
+    <tr>
+        <td><code>.destroy()</code></td>
+        <td>彻底销毁组件。清除所有事件监听、断开 ResizeObserver、还原 DOM 到初始状态</td>
+    </tr>
+</table>
+
+<h2>五、典型场景</h2>
+
+<h3>5.1 水平跑马灯（内容充足，自然滚动）</h3>
+<pre><code>const roller = new InfiniteRoller(document.getElementById('myRoller'), {
+    direction: 'horizontal',
+    gap: 24,
+    speed: 60,
+    autoStart: true,
+    pauseOnHover: true,
+    contentInsufficient: 'stop',   // 内容充足时用 stop 更合理
+});</code></pre>
+
+<h3>5.2 垂直滚动公告栏（内容很少，强制滚动）</h3>
+<pre><code>const roller = new InfiniteRoller(document.getElementById('noticeBar'), {
+    direction: 'vertical',
+    gap: 16,
+    speed: 40,
+    autoStart: true,
+    contentInsufficient: 'scroll', // 内容不足也继续滚动，自动填满
+    minCloneMultiplier: 4,         // 内容少时可以增加克隆倍数让滚动更流畅
+});</code></pre>
+
+<h3>5.3 图片轮播（手动控制）</h3>
+<pre><code>const roller = new InfiniteRoller(document.getElementById('carousel'), {
+    direction: 'horizontal',
+    gap: 0,                       // 图片之间不需要间距
+    speed: 80,
+    autoStart: false,             // 不自动开始，由按钮控制
+    pauseOnHover: false,
+    contentInsufficient: 'stop',
+});
+
+// 按钮控制
+document.getElementById('playBtn').onclick = () => roller.play();
+document.getElementById('pauseBtn').onclick = () => roller.pause();</code></pre>
+
+<h3>5.4 动态添加内容后刷新</h3>
+<pre><code>// 向容器添加新内容
+const newItem = document.createElement('div');
+newItem.className = 'scroll-item';
+newItem.textContent = '🔥 新项目';
+document.getElementById('myRoller').appendChild(newItem);
+
+// 刷新组件，它会自动重新捕获所有子项并重建克隆
+roller.refresh();</code></pre>
+
+<h2>六、生命周期管理</h2>
+
+<p>在单页应用（SPA）中，务必在组件销毁时调用 <code>destroy()</code> 释放资源：</p>
+
+<pre><code>const roller = new InfiniteRoller(container, options);
+
+// 页面离开或组件卸载时
+function cleanup() {
+    roller.destroy();  // 清除事件监听、ResizeObserver、还原 DOM
+}
+
+// Vue3 示例
+onBeforeUnmount(() => { roller.destroy(); });
+
+// React 示例
+useEffect(() => {
+    return () => roller.destroy(); // 清理函数
+}, []);</code></pre>
+
+<h2>七、原理概述</h2>
+
+<p>InfiniteRoller 的核心滚动机制分为四步：</p>
+
+<ol>
+    <li><strong>轨道构建</strong>：将容器的直接子元素移入一个内层轨道（<code>div.infinite-track</code>），轨道使用 <code>display: flex</code> 布局</li>
+    <li><strong>间距处理</strong>：不采用 CSS <code>gap</code> 属性（因为 gap 在克隆组边界会有间距突变），而是给每个子项单独设置 <code>margin-right</code>（水平）/<code>margin-bottom</code>（垂直），克隆时样式自动继承，边界间距完全一致</li>
+    <li><strong>多份克隆</strong>：将原始内容克隆 N 份（默认 N=3），拼接在轨道末尾。轨道总长 = 原始尺寸 × N，保证取模回绕时视口内始终有连续内容</li>
+    <li><strong>偏移递增 + 取模映射</strong>：<code>scrollOffset</code> 单调递增、永不重置。每次渲染时 <code>effectiveOffset = scrollOffset % originalSize</code>，应用 <code>translate3d(-effectiveOffset, 0, 0)</code>。因为有多份克隆，偏移跨越一个 originalSize 时用户无感知</li>
+</ol>
+
+<p>动画驱动使用 <code>requestAnimationFrame</code>，每帧根据时间差 <code>delta</code> 累加偏移量：</p>
+
+<pre><code>// 伪代码示意
+function animationLoop(now) {
+    delta = Math.min(maxDeltaTime, (now - lastTimestamp) / 1000);
+    scrollOffset += speed * delta;          // 偏移递增
+    effective = scrollOffset % originalSize; // 取模映射
+    track.style.transform = `translate3d(-${effective}px, 0, 0)`;
+    requestAnimationFrame(animationLoop);
+}</code></pre>
+
+<h2>八、常见问题</h2>
+
+<h3>Q1: 滚动看起来卡顿怎么办？</h3>
+<p>
+    检查是否有其他 JS 动画或高频 DOM 操作阻塞主线程。可以尝试降低 <code>speed</code> 值，
+    或确保滚动项数量合理（不要过多克隆，<code>minCloneMultiplier: 3</code> 通常足够）。
+</p>
+
+<h3>Q2: 内容不足时我不想要滚动，就静止展示，怎么做？</h3>
+<p>
+    设置 <code>contentInsufficient: 'stop'</code>。此时内容总尺寸小于容器尺寸时，组件不会克隆任何副本，直接停止滚动。
+</p>
+
+<h3>Q3: 窗口尺寸变化后滚动位置不对了？</h3>
+<p>
+    组件内部已通过 <code>ResizeObserver</code> 监听容器尺寸变化并自动调用 <code>refresh()</code>。
+    如果遇到特殊情况，也可以手动调用 <code>roller.refresh()</code> 强制重建。
+</p>
+
+<h3>Q4: 克隆的元素 id 冲突怎么办？</h3>
+<p>
+    默认会开启 <code>cloneIdSuffix: true</code>，克隆时自动为 <code>id</code> 属性添加 <code>_clone_xxxx</code> 后缀。
+    如果你的元素不需要 id，也可以关闭此功能节省一点性能。
+</p>
+
+<h3>Q5: destroy 后想重新启用？</h3>
+<p>
+    <code>destroy()</code> 是不可逆操作。重新启用需要新建 <code>new InfiniteRoller(container, options)</code> 实例。
+</p>
+
+<h2>九、完整示例</h2>
+
+<p>参见 <a href="index2.html">index2.html</a> 中三个实例的完整用法，涵盖水平、垂直、强制滚动、按钮控制等场景。</p>
+
+<pre><code>&lt;!-- 引入库 --&gt;
+&lt;script src="infinite-roller.js"&gt;&lt;/script&gt;
+
+&lt;!-- 容器 --&gt;
+&lt;div id="demoRoller" class="scroll-container"&gt;
+    &lt;div class="scroll-item"&gt;🏆 无限滚动方案 A&lt;/div&gt;
+    &lt;div class="scroll-item"&gt;🏆 无限滚动方案 B&lt;/div&gt;
+    &lt;div class="scroll-item"&gt;🏆 无限滚动方案 C&lt;/div&gt;
+    &lt;div class="scroll-item"&gt;🏆 高性能核心: transform + rAF&lt;/div&gt;
+    &lt;div class="scroll-item"&gt;🏆 智能复制策略&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;button id="playBtn"&gt;▶ 播放&lt;/button&gt;
+&lt;button id="pauseBtn"&gt;⏸ 暂停&lt;/button&gt;
+
+&lt;script&gt;
+    const roller = new InfiniteRoller(
+        document.getElementById('demoRoller'),
+        {
+            direction: 'horizontal',
+            gap: 12,
+            speed: 80,
+            autoStart: true,
+            pauseOnHover: true,
+            contentInsufficient: 'stop',
+        }
+    );
+
+    document.getElementById('playBtn').onclick  = () => roller.play();
+    document.getElementById('pauseBtn').onclick = () => roller.pause();
+&lt;/script&gt;</code></pre>
+
+<hr>
+
+<p style="text-align:center;color:#6a7b8e;font-size:0.85rem;">
+    InfiniteRoller &mdash; 完全无缝无闪烁 &middot; 轻量 &middot; 高性能
+</p>
+
+</div>
+</body>
+</html>

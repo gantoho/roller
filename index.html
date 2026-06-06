@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>通用无限循环滚动 · 无缝无闪烁版 | 高性能轮播</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: system-ui, 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(145deg, #f5f7fc 0%, #eef2f5 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        .demo-container {
+            max-width: 1300px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+        .card {
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(2px);
+            border-radius: 2rem;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.02);
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+        .card-header {
+            padding: 1.2rem 1.8rem;
+            background: rgba(255,255,255,0.6);
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .card-header h3 {
+            font-weight: 600;
+            font-size: 1.3rem;
+            color: #1e2a3e;
+            letter-spacing: -0.3px;
+        }
+        .card-header .desc {
+            font-size: 0.85rem;
+            color: #4a5b6e;
+            background: #f0f2f5;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+        }
+        .controls {
+            display: flex;
+            gap: 0.7rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        button {
+            background: white;
+            border: 1px solid #cdd9ed;
+            border-radius: 40px;
+            padding: 0.3rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #1e4668;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+        button:hover {
+            background: #eef3fc;
+            border-color: #8aa9c9;
+            transform: scale(0.96);
+        }
+        button.primary {
+            background: #1e4668;
+            border-color: #1e4668;
+            color: white;
+        }
+        button.primary:hover {
+            background: #0f2f4a;
+        }
+        .scroll-container {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            background: #ffffffcc;
+            backdrop-filter: blur(4px);
+            border-radius: 1.2rem;
+            margin: 0;
+            padding: 1rem 0;
+        }
+        .infinite-track {
+            display: flex;
+            will-change: transform;
+            backface-visibility: hidden;
+            flex-shrink: 0;
+            align-items: center;
+        }
+        .scroll-container.vertical .infinite-track {
+            flex-direction: column;
+        }
+        /* 基础样式 + 间距通过 js 动态设置 margin (实现完全无缝衔接，无跨组间隙突变) */
+        .scroll-item {
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #ffffff 0%, #f9fafc 100%);
+            border-radius: 1.2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 0.9rem 1.6rem;
+            font-weight: 500;
+            text-align: center;
+            color: #1f3a4b;
+            transition: all 0.2s;
+            border: 1px solid #e9edf2;
+            white-space: nowrap;
+        }
+        .vertical .scroll-item {
+            white-space: normal;
+            min-width: 180px;
+        }
+        .scroll-item i {
+            font-style: normal;
+            font-weight: 600;
+            background: #eef2fa;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+        }
+        .color-item {
+            background: linear-gradient(105deg, #fff9f0, #fff4e6);
+            border-left: 5px solid #f7b05e;
+        }
+        footer {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #6c7a8e;
+            margin-top: 1rem;
+        }
+        @media (max-width: 700px) {
+            body { padding: 1rem; }
+            .scroll-item { padding: 0.6rem 1.2rem; font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="demo-container">
+    <div class="card">
+        <div class="card-header">
+            <h3>🏁 水平无限滚动 · 完全无缝无闪烁</h3>
+            <div class="desc">间距 24px | 速度 60px/秒 | 悬停暂停 | 独立margin间距克隆无跳跃</div>
+            <div class="controls">
+                <button id="playBtn1">▶ 播放</button>
+                <button id="pauseBtn1">⏸ 暂停</button>
+                <button id="refreshBtn1">🔄 重建(模拟resize)</button>
+            </div>
+        </div>
+        <div id="horizontalRoll" class="scroll-container" style="padding: 1rem 0.5rem;">
+            <div class="scroll-item color-item">✨ 前端架构</div>
+            <div class="scroll-item">🚀 高性能动画</div>
+            <div class="scroll-item">⚡ 无限循环滚动</div>
+            <div class="scroll-item">🎨 CSS 硬件加速</div>
+            <div class="scroll-item">📦 智能复制拼接</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>🧲 垂直无限滚动 · 强制永远滚动 (无缝克隆)</h3>
+            <div class="desc">间距 16px | 速度 40px/秒 | 内容不足自动复制多份 → 连续无闪</div>
+            <div class="controls">
+                <button id="playBtn2">▶ 播放</button>
+                <button id="pauseBtn2">⏸ 暂停</button>
+                <button id="refreshBtn2">🔄 刷新布局</button>
+            </div>
+        </div>
+        <div id="verticalRoll" class="scroll-container vertical" style="height: 280px; padding: 0.8rem 0;">
+            <div class="scroll-item">🎯 设计哲学</div>
+            <div class="scroll-item">⚙️ 配置灵活</div>
+            <div class="scroll-item">💎 无缝克隆技术</div>
+            <div class="scroll-item">📐 自动检测边界</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>🔁 宽内容自然无限滚动 (原始宽度 > 容器)</h3>
+            <div class="desc">间距 12px | 速度 80px/秒 | 多份复制保证绝对衔接</div>
+            <div class="controls">
+                <button id="playBtn3">▶ 播放</button>
+                <button id="pauseBtn3">⏸ 暂停</button>
+            </div>
+        </div>
+        <div id="wideRoll" class="scroll-container" style="padding: 0.9rem 0;">
+            <div class="scroll-item">🏆 无限滚动方案 A</div>
+            <div class="scroll-item">🏆 无限滚动方案 B (长内容)</div>
+            <div class="scroll-item">🏆 无限滚动方案 C</div>
+            <div class="scroll-item">🏆 高性能核心: transform + rAF</div>
+            <div class="scroll-item">🏆 智能复制策略</div>
+        </div>
+    </div>
+    <footer>✨ 通用无线循环滚动 · 彻底消除闪烁：采用独立margin实现间距 + 多份克隆 + 取模偏移，保证跨组边界间距一致</footer>
+</div>
+
+<script src="infinite-roller.js"></script>
+<script>
+    // 初始化各实例，展示完美无缝滚动
+    document.addEventListener('DOMContentLoaded', () => {
+        // 水平滚动实例 (自动检测，间距24)
+        const roller1 = new InfiniteRoller(document.getElementById('horizontalRoll'), {
+            direction: 'horizontal',
+            gap: 24,
+            speed: 60,
+            autoStart: true,
+            contentInsufficient: 'stop',     // 内容不足时停止滚动
+            pauseOnHover: true,
+            minCloneMultiplier: 3
+        });
+        // 垂直强制滚动 (永远滚动，即使高度不足)
+        const roller2 = new InfiniteRoller(document.getElementById('verticalRoll'), {
+            direction: 'vertical',
+            gap: 16,
+            speed: 40,
+            autoStart: true,
+            contentInsufficient: 'scroll',   // 内容不足时继续滚动（填满容器）
+            pauseOnHover: true,
+            minCloneMultiplier: 3
+        });
+        // 宽内容自然滚动
+        const roller3 = new InfiniteRoller(document.getElementById('wideRoll'), {
+            direction: 'horizontal',
+            gap: 12,
+            speed: 80,
+            autoStart: true,
+            contentInsufficient: 'stop',
+            pauseOnHover: true,
+            minCloneMultiplier: 3
+        });
+
+        // 绑定控制按钮
+        document.getElementById('playBtn1').onclick = () => roller1.play();
+        document.getElementById('pauseBtn1').onclick = () => roller1.pause();
+        document.getElementById('refreshBtn1').onclick = () => roller1.refresh();
+
+        document.getElementById('playBtn2').onclick = () => roller2.play();
+        document.getElementById('pauseBtn2').onclick = () => roller2.pause();
+        document.getElementById('refreshBtn2').onclick = () => roller2.refresh();
+
+        document.getElementById('playBtn3').onclick = () => roller3.play();
+        document.getElementById('pauseBtn3').onclick = () => roller3.pause();
+
+        window.addEventListener('beforeunload', () => {
+            roller1.destroy();
+            roller2.destroy();
+            roller3.destroy();
+        });
+    });
+</script>
+</body>
+</html>
