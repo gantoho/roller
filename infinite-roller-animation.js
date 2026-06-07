@@ -445,6 +445,22 @@ class InfiniteRollerAnimation {
             this.track.style.height = 'max-content';
         }
 
+        // 保存当前滚动位置比例（避免 resize 时闪回起点）
+        let currentPos = 0;
+        const m = getComputedStyle(this.track).transform;
+        if (m && m !== 'none') {
+            const m3d = m.match(/matrix3d\(([^)]+)\)/);
+            const m2d = m.match(/matrix\(([^)]+)\)/);
+            if (m3d) {
+                const p = m3d[1].split(',').map(Number);
+                currentPos = this._axis === 'X' ? p[12] : p[13];
+            } else if (m2d) {
+                const p = m2d[1].split(',').map(Number);
+                currentPos = this._axis === 'X' ? (p[4] || 0) : (p[5] || 0);
+            }
+        }
+        const ratio = this.originalSize > 0 ? Math.abs(currentPos) / this.originalSize : 0;
+
         this._updateOriginalSize();
         this._cloneToAchieveSeamless();
         this._updateContainerSize();
@@ -454,6 +470,10 @@ class InfiniteRollerAnimation {
         this.track.style.animation = 'none';
         void this.track.offsetHeight;
         this._updateAnimation();
+        // 按比例恢复动画位置（负 delay 让动画从对应位置开始）
+        if (ratio > 0) {
+            this.track.style.animationDelay = -(ratio * (this.originalSize / this.options.speed)) + 's';
+        }
         if (!this.isPlaying) {
             this.track.style.animationPlayState = 'paused';
         }

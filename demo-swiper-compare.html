@@ -344,8 +344,18 @@ function initSwiper() {
 
 initSwiper();
 
-let t;
-window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(initSwiper, 150); });
+let t, lastSwiperWidth = 0;
+window.addEventListener('resize', () => {
+    clearTimeout(t);
+    t = setTimeout(() => {
+        // 仅容器宽度变化时才重建，避免 Safari 地址栏收起/展开导致的无效重建
+        const w = swiperContainer.offsetWidth;
+        if (w !== lastSwiperWidth) {
+            lastSwiperWidth = w;
+            initSwiper();
+        }
+    }, 150);
+});
 
 // ================================================================
 //  InfiniteRoller 版本

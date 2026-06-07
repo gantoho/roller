@@ -629,14 +629,17 @@ class InfiniteRoller {
             this.track.style.height = 'max-content';
         }
 
+        // 保存当前滚动位置比例（避免 resize 时闪回起点）
+        const ratio = this.originalSize > 0 ? (this.scrollOffset % this.originalSize) / this.originalSize : 0;
+
         // 重新测量 + 克隆
         this._updateOriginalSize();
         this._cloneToAchieveSeamless();
         this._updateContainerSize();
         this._updateTrackSize();
 
-        // 重置偏移
-        this.scrollOffset = 0;
+        // 按比例恢复偏移
+        this.scrollOffset = ratio * this.originalSize;
         this._applyTransformFromOffset();
 
         // 更新居中状态（基于最新尺寸）

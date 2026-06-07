@@ -487,12 +487,19 @@ class InfiniteRollerTransition {
             this.track.style.height = 'max-content';
         }
 
+        // 保存当前滚动位置比例（避免 resize 时闪回起点）
+        // pause() 已将当前位置 snapshot 到 transform 上，从 computed style 读取
+        const currentPos = this._getComputedTranslate();
+        const ratio = this.originalSize > 0 ? Math.abs(currentPos) / this.originalSize : 0;
+
         this._updateOriginalSize();
         this._cloneToAchieveSeamless();
         this._updateContainerSize();
         this._updateTrackSize();
 
-        this._applyTransform(0);
+        // 按比例恢复位置，并重新计算剩余时间
+        this._applyTransform(-ratio * this.originalSize);
+        this._resumeRemaining = ((1 - ratio) * this.originalSize) / this.options.speed;
         this._updateCenterMode();
 
         const canPlay = !(this._getContentWidth() < this.containerSize - this.options.scrollThreshold * 2
