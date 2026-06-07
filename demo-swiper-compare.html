@@ -149,17 +149,21 @@ let swiper = null, ORIG_HTML = null;
 function onSwiperEnter() {
     if (!swiper || swiper.destroyed) return;
     swiper.autoplay.stop();
-    // 立即冻结当前过渡位置
     swiper.setTransition(0);
-    swiper.setTranslate(swiper.getTranslate());
+    swiper._pausedPos = swiper.getTranslate();
+    swiper.setTranslate(swiper._pausedPos);
 }
 
 function onSwiperLeave() {
     if (!swiper || swiper.destroyed) return;
-    // 恢复过渡，手动推进一次让 Swiper 同步状态，再启动 autoplay
+    const step = swiper.slidesSizesGrid[0] + GAP;
     swiper.setTransition(swiper.params.speed);
-    swiper.slideNext();
-    swiper.autoplay.start();
+    swiper.setTranslate(swiper._pausedPos - step);
+    swiper.once('transitionEnd', () => {
+        swiper.updateProgress();
+        swiper.updateSlides();
+        swiper.autoplay.start();
+    });
 }
 
 function initSwiper() {
