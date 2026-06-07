@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<style>
+    .effortless_swiper_content {
+        overflow: hidden;
+    }
+
+    .effortless_swiper_content .swiper_box {
+        display: flex;
+        gap: 20px;
+        padding: 0;
+        list-style: none;
+        margin: 0;
+    }
+
+    .effortless_swiper_content ul li.swiper_item {
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    .effortless_swiper_content ul li img {
+        max-width: 75px;
+        vertical-align: bottom;
+    }
+
+    @media (max-width: 400px) {
+        .effortless_swiper_content .swiper_box {
+            gap: 15px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .effortless_box {
+            padding-bottom: 120px;
+        }
+    }
+</style>
+
+<body>
+    <div
+        style="background: #161b22; border-radius: 1.5rem; padding: 2rem; border: 1px solid #30363d;">
+        <div class="effortless_swiper_content">
+            <ul class="swiper_box">
+                <li class="swiper_item"><img
+                        src="https://www.puprime.com/wp-content/themes/puprime_new/images/effortless_img01.webp" alt=""
+                        width="75" height="48">
+                </li>
+                <li class="swiper_item"><img
+                        src="https://www.puprime.com//wp-content/themes/puprime_new/images/effortless_img02.webp" alt=""
+                        width="75" height="48">
+                </li>
+                <li class="swiper_item"><img
+                        src="https://www.puprime.com//wp-content/themes/puprime_new/images/effortless_img03.webp" alt=""
+                        width="75" height="48">
+                </li>
+                <li class="swiper_item"><img
+                        src="https://www.puprime.com//wp-content/themes/puprime_new/images/effortless_img04.webp" alt=""
+                        width="75" height="48">
+                </li>
+                <li class="swiper_item"><img
+                        src="https://www.puprime.com//wp-content/themes/puprime_new/images/effortless_img05.webp" alt=""
+                        width="75" height="48">
+                </li>
+                <li class="swiper_item"><img
+                        src="https://www.puprime.com//wp-content/themes/puprime_new/images/effortless_img06.webp" alt=""
+                        width="75" height="48">
+                </li>
+                <li class="swiper_item"><img
+                        src="https://www.puprime.com//wp-content/themes/puprime_new/images/effortless_img07.webp" alt=""
+                        width="75" height="48">
+                </li>
+                <li class="swiper_item"><img
+                        src="https://www.puprime.com//wp-content/themes/puprime_new/images/effortless_img08.webp" alt=""
+                        width="75" height="48">
+                </li>
+                <li class="swiper_item"><img
+                        src="https://www.puprime.com//wp-content/themes/puprime_new/images/effortless_img09.webp" alt=""
+                        width="75" height="48">
+                </li>
+                <li class="swiper_item"><img
+                        src="https://www.puprime.com//wp-content/themes/puprime_new/images/effortless_img10.webp" alt=""
+                        width="75" height="48">
+                </li>
+                <li class="swiper_item"><img
+                        src="https://www.puprime.com//wp-content/themes/puprime_new/images/effortless_img11.webp" alt=""
+                        width="75" height="48">
+                </li>
+                <li class="swiper_item"><img
+                        src="https://www.puprime.com//wp-content/themes/puprime_new/images/effortless_img12.webp" alt=""
+                        width="75" height="48">
+                </li>
+            </ul>
+        </div>
+    </div>
+</body>
+<script>
+    /**
+     * 无限滚动 — 原生 JavaScript 实现
+     *
+     * 核心原理：
+     *   将原始每一组内容的子元素复制多份，追加到同一个轨道（<ul>）末尾，
+     *   然后通过 requestAnimationFrame 持续移动轨道的 transform: translateX，
+     *   当移动距离达到一组完整内容的宽度时（scrollOffset >= contentGroupWidth），
+     *   将偏移量归零，实现视觉上无缝循环滚动的效果。
+     *
+     * 为什么用像素复位而不是克隆组边界检测？
+     *   多个克隆组之间由 CSS gap 产生间距，而 gap 会随响应式断点变化。
+     *   直接按像素计算复位阈值，比实时检测元素位置更稳定，也不依赖克隆数量。
+     */
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // ================================================================
+        //  基准速度 — 每一帧（约 16.67ms）轨道向左移动的像素数
+        //  值越大滚动越快，会根据窗口宽度在 tick 中动态调整
+        // ================================================================
+        var baseSpeed = 1.1;
+
+        // ================================================================
+        //  累计滚动偏移量 — 从起始位置向左滚动了多少像素
+        //  始终为正值，归零时机由 contentGroupWidth 控制
+        // ================================================================
+        var scrollOffset = 0;
+
+        // ================================================================
+        //  轨道元素 — 包含所有子元素（<li>）且施加 transform 的容器
+        //  所有原始内容 + 克隆内容都在同一个轨道内
+        // ================================================================
+        var trackElement = document.querySelector('.effortless_swiper_content .swiper_box');
+
+        // ================================================================
+        //  外层容器 — 设置 overflow: hidden 裁剪溢出，同时也是悬停区域
+        // ================================================================
+        var outerContainer = document.querySelector('.effortless_swiper_content');
+
+        // ================================================================
+        //  requestAnimationFrame 句柄 — 用于暂停 / 恢复滚动时取消上一帧
+        // ================================================================
+        var animationFrameId = null;
+
+        // ================================================================
+        //  是否已添加克隆内容 — 用于判断当前轨道中是否包含多余的副本
+        //  true 表示轨道内包含原始 + 克隆，false 表示仅含原始内容
+        // ================================================================
+        var hasClones = false;
+
+        // ================================================================
+        //  原始子元素数量 — 克隆前记录，用于计算一组完整内容的总宽度
+        //  克隆后 trackElement.children 会膨胀，必须提前保存
+        // ================================================================
+        var originalItemCount = trackElement.children.length;
+
+        // ================================================================
+        //  原始 HTML 快照 — 克隆用的模板内容，保存初始化时的 innerHTML
+        // ================================================================
+        var originalHTML = trackElement.innerHTML;
+
+        // ================================================================
+        //  克隆份数 — 原始内容后面追加 n 份完整副本，确保
+        //  在任意速度下都至少有 1 组可见内容作为"接力"
+        // ================================================================
+        var cloneCount = 2;
+
+        // ================================================================
+        //  内容组宽度 — 一组完整内容的总像素宽度
+        //  计算方式：originalItemCount × (单个项目宽 + 相邻间距)
+        // ================================================================
+        var contentGroupWidth = 0;
+
+        // ================================================================
+        //  是否可滚动 — 当原始内容总宽度 > 可视容器宽度时为 true
+        //  缩放浏览器时此状态可能变化（内容不足 → 可滚动 / 反之）
+        // ================================================================
+        var isScrollable = false;
+
+        // ================================================================
+        //  初始化：先测量是否需要滚动，再决定是否克隆
+        //  内容足够宽 → 克隆 + 启动滚动
+        //  内容不足   → 不克隆 + 居中显示
+        // ================================================================
+        initScroll();
+
+        // ================================================================
+        //  窗口缩放时重新检查滚动条件，必要时添加 / 移除克隆
+        // ================================================================
+        window.addEventListener('resize', onResize);
+
+        // ================================================================
+        //  鼠标悬停交互：仅在内容可滚动时生效
+        // ================================================================
+        outerContainer.addEventListener('mouseenter', function () {
+            if (!isScrollable) return;
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+        });
+        outerContainer.addEventListener('mouseleave', function () {
+            if (!isScrollable) return;
+            tick();
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        //  以下为函数定义
+        // ═══════════════════════════════════════════════════════════════
+
+        /**
+         * 测量原始内容的总像素宽度（不依赖克隆后的 children）
+         *
+         * 取前两个子元素的 getBoundingClientRect() 实测单个项目宽度和
+         * 相邻间距，公式：contentGroupWidth = 原始数量 × (itemW + gap)
+         *
+         * 必须先调用此函数再调用 initScroll，因为 initScroll 需要
+         * 根据测量结果决定是否克隆。
+         *
+         * @returns {number} 一组完整内容的像素宽度
+         */
+        function measureContentWidth() {
+            var items = trackElement.children;
+            if (items.length < 2) return 0;
+
+            // 单个项目的渲染宽度（含 border、padding，不含 margin）
+            var itemWidth = items[0].getBoundingClientRect().width;
+
+            // 相邻项目之间的实际间距（CSS gap 的渲染结果）
+            var itemGap = items[1].getBoundingClientRect().left
+                        - items[0].getBoundingClientRect().right;
+
+            // 一组完整内容 = 原始数量的项目 + 它们之间的所有 gap
+            // 末尾 gap（末项 → 下一组首项）已通过 (itemW + gap) × n 自动包含
+            return originalItemCount * (itemWidth + itemGap);
+        }
+
+        /**
+         * 初始化滚动：根据内容宽度决定是否克隆及启动
+         *
+         * 两种路径：
+         *   A. 内容宽度 > 容器宽度 → 添加克隆，启动无限滚动
+         *   B. 内容宽度 ≤ 容器宽度 → 不克隆，居中显示原始组
+         */
+        function initScroll() {
+            contentGroupWidth = measureContentWidth();
+            var containerWidth = outerContainer.clientWidth;
+            isScrollable = contentGroupWidth > containerWidth;
+
+            if (isScrollable) {
+                addClones();
+                // 克隆后重新测量（含 gap 已体现在 scrollWidth 中，确保一致）
+                contentGroupWidth = measureContentWidth();
+                tick();
+            } else {
+                removeClones();
+                setCentered(true);
+            }
+        }
+
+        /**
+         * 窗口缩放回调
+         *
+         * 重新测量内容宽度和容器宽度，当可滚动状态发生变化时：
+         *   - 不可滚动 → 可滚动：添加克隆，移除居中样式，启动滚动
+         *   - 可滚动 → 不可滚动：停止动画，移除克隆，居中显示
+         */
+        function onResize() {
+            contentGroupWidth = measureContentWidth();
+            var containerWidth = outerContainer.clientWidth;
+            var wasScrollable = isScrollable;
+            isScrollable = contentGroupWidth > containerWidth;
+
+            if (isScrollable && !wasScrollable) {
+                // 从居中 → 滚动模式
+                setCentered(false);
+                addClones();
+                contentGroupWidth = measureContentWidth();
+                scrollOffset = 0;
+                tick();
+            } else if (!isScrollable && wasScrollable) {
+                // 从滚动 → 居中模式
+                stopAnimation();
+                removeClones();
+                scrollOffset = 0;
+                trackElement.style.transform = 'translateX(0px)';
+                setCentered(true);
+            }
+        }
+
+        /**
+         * 添加克隆内容：将 originalHTML 追加 cloneCount 份到轨道末尾
+         * 仅当尚未添加克隆时执行，重复调用无副作用
+         */
+        function addClones() {
+            if (hasClones) return;
+            for (var i = 0; i < cloneCount; i++) {
+                trackElement.insertAdjacentHTML('beforeend', originalHTML);
+            }
+            hasClones = true;
+        }
+
+        /**
+         * 移除克隆内容：删除所有超出原始数量的子元素，仅保留原始组
+         * 仅当已添加克隆时执行，重复调用无副作用
+         */
+        function removeClones() {
+            if (!hasClones) return;
+            var children = trackElement.children;
+            // 从末尾开始删除，避免索引偏移
+            while (children.length > originalItemCount) {
+                trackElement.removeChild(children[children.length - 1]);
+            }
+            hasClones = false;
+        }
+
+        /**
+         * 设置居中模式
+         *
+         * @param {boolean} centered - true 表示容器内居中显示，false 表示恢复默认
+         *
+         * 居中方式：将外层容器设为 flex 容器并 justify-content: center，
+         * 同时轨道元素使用 width: fit-content 使其宽度收缩到内容大小，
+         * 否则 flex 子项默认拉伸到容器宽度，margin: 0 auto 不会生效。
+         */
+        function setCentered(centered) {
+            if (centered) {
+                outerContainer.style.display = 'flex';
+                outerContainer.style.justifyContent = 'center';
+                trackElement.style.width = 'fit-content';
+            } else {
+                outerContainer.style.display = '';
+                outerContainer.style.justifyContent = '';
+                trackElement.style.width = '';
+            }
+        }
+
+        /**
+         * 停止动画循环：取消当前帧并将句柄置空
+         */
+        function stopAnimation() {
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+        }
+
+        /**
+         * 每帧执行一次滚动逻辑
+         *
+         * 流程：
+         *   1. 检查内容宽度是否超出容器，不足时停止动画循环（等待 resize 恢复）
+         *   2. 根据窗口宽度决定当前帧速度（> 430px 用基准速度，否则减半）
+         *   3. 累加滚动偏移量
+         *   4. 偏移量 >= 一组完整内容宽度时归零（像素复位，视觉上无缝回环）
+         *   5. 将偏移量应用到 trackElement 的 transform: translateX
+         *   6. 继续请求下一帧
+         */
+        function tick() {
+            // 内容不足以滚动时，停止动画循环，不再请求下一帧
+            if (!isScrollable) {
+                stopAnimation();
+                return;
+            }
+
+            // 先取消上一帧，避免多次调用造成帧叠加
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+
+            animationFrameId = requestAnimationFrame(function () {
+                // 响应式速度：窄屏时内容更少，减缓速度避免显得太快
+                var responsiveSpeed = window.innerWidth > 430
+                    ? baseSpeed
+                    : baseSpeed / 2;
+
+                scrollOffset += responsiveSpeed;
+
+                // 像素级无缝复位：当累计滚动距离达到一组内容的总宽度时归零
+                // 此时原始组的第一个项目正好位于克隆组第一个项目之前的位置，
+                // 视觉上完全一致，用户感知不到跳变
+                if (scrollOffset >= contentGroupWidth) {
+                    scrollOffset = 0;
+                }
+
+                // 向左移动（translateX 负值）
+                trackElement.style.transform = 'translateX(-' + scrollOffset + 'px)';
+
+                // 继续下一帧
+                tick();
+            });
+        }
+    });
+</script>
+
+</html>
