@@ -74,8 +74,11 @@
             font-family: 'JetBrains Mono', 'Consolas', monospace;
             font-weight: 600;
         }
-        /* Swiper 覆盖 */
-        .swiper-wrapper { transition-timing-function: linear !important; }
+        /* Swiper 覆盖 — Safari GPU 加速 */
+        .swiper-wrapper {
+            transition-timing-function: linear !important;
+            will-change: transform;
+        }
         .swiper-slide { width: auto !important; }
         .swiper-wrapper.centered {
             justify-content: center;
@@ -265,7 +268,7 @@
 <script src="infinite-roller.js"></script>
 <script>
 // ================================================================
-//  Swiper 版本 — 最少代码，仅用 autoplay + loop
+//  Swiper 版本 — 纯 Swiper loop + autoplay
 // ================================================================
 const swiperContainer = document.getElementById('swiperRoller');
 const GAP = 20;
@@ -335,6 +338,7 @@ function initSwiper() {
         speed: 3000,
         allowTouchMove: false,
         watchOverflow: false,
+        updateOnWindowResize: false,
         autoplay: { delay: 0, disableOnInteraction: false, stopOnLastSlide: false },
     });
 
@@ -348,7 +352,6 @@ let t, lastSwiperWidth = 0;
 window.addEventListener('resize', () => {
     clearTimeout(t);
     t = setTimeout(() => {
-        // 仅容器宽度变化时才重建，避免 Safari 地址栏收起/展开导致的无效重建
         const w = swiperContainer.offsetWidth;
         if (w !== lastSwiperWidth) {
             lastSwiperWidth = w;
