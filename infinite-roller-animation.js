@@ -37,6 +37,7 @@ class InfiniteRollerAnimation {
             infoElements: null,
             cloneIdSuffix: true,
             resizeDebounceMs: 100,
+            onReady: null,       // 初始化完成回调（只触发一次）
             onPlay: null,
             onPause: null,
             onDestroy: null,
@@ -102,10 +103,6 @@ class InfiniteRollerAnimation {
 
         this.track = document.createElement('div');
         this.track.className = 'infinite-track-animation';
-        this.track.style.display = 'flex';
-        this.track.style.willChange = 'transform';
-        this.track.style.backfaceVisibility = 'hidden';
-        this.track.style.flexShrink = '0';
 
         if (this.options.direction === 'horizontal') {
             this.track.style.flexDirection = 'row';
@@ -147,6 +144,11 @@ class InfiniteRollerAnimation {
         window.addEventListener('resize', this._handleResize);
 
         if (this.options.autoStart) this.play();
+
+        // ---- 初始化完成钩子 ----
+        if (typeof this.options.onReady === 'function') {
+            this.options.onReady.call(this);
+        }
     }
 
     // ============================================================

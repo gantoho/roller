@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Swiper vs InfiniteRoller — 性能对比</title>
+    <link rel="stylesheet" href="infinite-roller.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -117,8 +118,6 @@
     </div>
 </div>
 
-<div style="height: 1000px"></div>
-
 <!-- InfiniteRoller 版本 -->
 <div class="demo-section">
     <h2>
@@ -139,6 +138,126 @@
         <span>容器尺寸：<span class="value" id="nativeContainerSize">-</span></span>
     </div>
 </div>
+
+<style>
+	.effortless_swiper_content {
+		display: flex;
+		overflow: hidden;
+		gap: 20px;
+	}
+
+	.effortless_swiper_content .swiper_box {
+		display: flex;
+		gap: 20px;
+	}
+
+	.effortless_swiper_content ul li.swiper_item {
+		display: inline-block;
+		cursor: pointer;
+	}
+
+	.effortless_swiper_content ul li img {
+		max-width: 75px;
+	}
+
+	@media (max-width: 400px) {
+		.effortless_swiper_content {
+			gap: 15px;
+		}
+
+		.effortless_swiper_content .swiper_box {
+			gap: 15px;
+		}
+	}
+	@media (max-width: 768px) {
+		.effortless_box{padding-bottom: 120px;}
+	}
+</style>
+
+<div style="max-width: 1000px; width: 100%; background: #161b22; border-radius: 1.5rem; padding: 2rem 0; border: 1px solid #30363d;">
+    <div class="effortless_swiper_content">
+        <ul class="swiper_box" style="transform: translateX(0px);">
+            <li class="swiper_item"><img src="https://www.puprime.com/wp-content/themes/puprime_new/images/effortless_img01.webp" alt="" width="75" height="48">
+            </li>
+            <li class="swiper_item"><img src="https://www.puprime.com//wp-content/themes/puprime_new/images/effortless_img02.webp" alt="" width="75" height="48">
+            </li>
+            <li class="swiper_item"><img src="https://www.puprime.com//wp-content/themes/puprime_new/images/effortless_img03.webp" alt="" width="75" height="48">
+            </li>
+            <li class="swiper_item"><img src="https://www.puprime.com//wp-content/themes/puprime_new/images/effortless_img04.webp" alt="" width="75" height="48">
+            </li>
+            <li class="swiper_item"><img src="https://www.puprime.com//wp-content/themes/puprime_new/images/effortless_img05.webp" alt="" width="75" height="48">
+            </li>
+            <li class="swiper_item"><img src="https://www.puprime.com//wp-content/themes/puprime_new/images/effortless_img06.webp" alt="" width="75" height="48">
+            </li>
+            <li class="swiper_item"><img src="https://www.puprime.com//wp-content/themes/puprime_new/images/effortless_img07.webp" alt="" width="75" height="48">
+            </li>
+            <li class="swiper_item"><img src="https://www.puprime.com//wp-content/themes/puprime_new/images/effortless_img08.webp" alt="" width="75" height="48">
+            </li>
+            <li class="swiper_item"><img src="https://www.puprime.com//wp-content/themes/puprime_new/images/effortless_img09.webp" alt="" width="75" height="48">
+            </li>
+            <li class="swiper_item"><img src="https://www.puprime.com//wp-content/themes/puprime_new/images/effortless_img10.webp" alt="" width="75" height="48">
+            </li>
+            <li class="swiper_item"><img src="https://www.puprime.com//wp-content/themes/puprime_new/images/effortless_img11.webp" alt="" width="75" height="48">
+            </li>
+            <li class="swiper_item"><img src="https://www.puprime.com//wp-content/themes/puprime_new/images/effortless_img12.webp" alt="" width="75" height="48">
+            </li>
+        </ul>
+    </div>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+	jQuery(document).ready(function ($) {
+		let speed = 1.1; // 控制滚动速度，单位ms
+		let x = 0; // 起始位置
+		let swiperElem = ".effortless_swiper_content .swiper_box"; // 请在此处存放需要滚动的元素节点dom
+		let hoverElem = ".effortless_swiper_content"; // 鼠标悬停dom
+		let positiveOrNegative = "-"; // "-" 往左滚动，不写""则往右滚动
+		let timr = null;
+		let swiperRight = null;
+		let windowWidth = null;
+		// $(hoverElem).css("cursor", "pointer");
+		// 入口函数
+		const goPlay = (elem) => {
+			if (timr) {
+				stopPlay();
+			}
+			timr = requestAnimationFrame(() => {
+				swiperRight = elem.eq(1).offset().left;
+				windowWidth = $(window).width();
+				if (windowWidth > 430) {
+					x += speed;
+				} else {
+					x += speed / 2;
+				}
+				if (swiperRight <= 0) {
+					x = 0;
+				}
+				elem.css({ "transform": "translateX(" + positiveOrNegative + x + "px)" });
+				swiperElem = $(swiperElem);
+				goPlay(swiperElem);
+			})
+		}
+		// 初始化函数
+		const init = (elem) => {
+			for (let i = 0; i < 2; i++) {
+				elem.clone(true).appendTo(elem.parent())
+			}
+			swiperElem = $(swiperElem);
+			goPlay(swiperElem);
+		}
+		init($(swiperElem));
+		// 停止滚动函数
+		const stopPlay = () => {
+			cancelAnimationFrame(timr);
+		}
+		// 鼠标悬停事件
+		$(hoverElem).hover(() => {
+			stopPlay();
+		}, () => {
+			goPlay(swiperElem);
+		})
+	})
+</script>
 
 <div style="height: 1000px"></div>
 
@@ -242,6 +361,9 @@ new InfiniteRoller(document.getElementById('nativeRoller'), {
         origin: '#nativeOriginalSize',
         contain: '#nativeContainerSize',
     },
+    onReady(instance) {
+        console.log('roll 初始化完成');
+    }
 });
 </script>
 </body>

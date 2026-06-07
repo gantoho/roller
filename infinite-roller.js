@@ -37,9 +37,10 @@ class InfiniteRoller {
      * @param {number}      [options.precisionThreshold=1e8]   偏移量超过此值时主动取模，防止浮点精度丢失
      * @param {number}      [options.maxDeltaTime=0.05]        单帧最大时间差(秒)，防止切后台后的超大步长
      * @param {boolean}     [options.cloneIdSuffix=true]       克隆元素时是否自动给 id 添加唯一后缀避免冲突
-     * @param {Function}    [options.onPlay=null]              开始滚动回调
-     * @param {Function}    [options.onPause=null]             暂停滚动回调
-     * @param {Function}    [options.onDestroy=null]           销毁时回调
+     * @param {Function}    [options.onReady=null]             实例初始化完成回调（只触发一次）
+ * @param {Function}    [options.onPlay=null]              开始滚动回调
+ * @param {Function}    [options.onPause=null]             暂停滚动回调
+ * @param {Function}    [options.onDestroy=null]           销毁时回调
      */
     constructor(container, options = {}) {
         if (!container || !(container instanceof HTMLElement)) {
@@ -66,6 +67,7 @@ class InfiniteRoller {
             precisionThreshold: 1e8,
             maxDeltaTime: 0.05,
             cloneIdSuffix: true,
+            onReady: null,       // 初始化完成回调（只触发一次）
             onPlay: null,
             onPause: null,
             onDestroy: null,
@@ -140,10 +142,6 @@ class InfiniteRoller {
 
         this.track = document.createElement('div');
         this.track.className = 'infinite-track';
-        this.track.style.display = 'flex';
-        this.track.style.willChange = 'transform';
-        this.track.style.backfaceVisibility = 'hidden';
-        this.track.style.flexShrink = '0';
 
         if (this.options.direction === 'horizontal') {
             this.track.style.flexDirection = 'row';
@@ -200,6 +198,11 @@ class InfiniteRoller {
         // ---- 自动启动 ----
         if (this.options.autoStart) {
             this.play();
+        }
+
+        // ---- 初始化完成钩子 ----
+        if (typeof this.options.onReady === 'function') {
+            this.options.onReady.call(this);
         }
     }
 

@@ -1,0 +1,21 @@
+/**
+ * InfiniteRoller — 基础样式
+ * 覆盖三个版本的轨道元素通用样式，确保 DOM 创建时即被 CSS 引擎应用，
+ * 避免初始化期间的样式闪烁。
+ */
+
+/* ── 容器 ── */
+.infinite-roller-container {
+    overflow: hidden;
+    position: relative;
+}
+
+/* ── 轨道 ── */
+.infinite-track,
+.infinite-track-transition,
+.infinite-track-animation {
+    display: flex;
+    flex-shrink: 0;
+    will-change: transform;
+    backface-visibility: hidden;
+}
