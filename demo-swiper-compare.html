@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swiper vs InfiniteRoller — 性能对比</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, 'Segoe UI', 'PingFang SC', Roboto, sans-serif;
+            background: #0d1117;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3rem;
+        }
+        .demo-section {
+            max-width: 1000px;
+            width: 100%;
+            background: #161b22;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            border: 1px solid #30363d;
+        }
+        h2 { color: #f0f6fc; font-size: 1.3rem; margin-bottom: 0.3rem; }
+        .desc { color: #8b949e; font-size: 0.9rem; margin-bottom: 1.2rem; line-height: 1.6; }
+        .badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-weight: 500;
+            margin-right: 0.4rem;
+        }
+        .badge-swiper { background: #1a2f5c; color: #58a6ff; }
+        .badge-native { background: #0d2818; color: #3fb950; }
+
+        .roller-item {
+            flex-shrink: 0;
+            padding: 12px 28px;
+            border-radius: 10px;
+            text-align: center;
+            white-space: nowrap;
+            font-size: 0.95rem;
+            font-weight: 500;
+            background: #9e6a03;
+            color: #fff;
+        }
+        .roller-container {
+            overflow: hidden;
+            border-radius: 12px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+        }
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding: 0.6rem 1rem;
+            background: #0d1117;
+            border-radius: 8px;
+            border: 1px solid #21262d;
+            font-size: 0.85rem;
+            color: #8b949e;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .info-bar .value {
+            color: #f0f6fc;
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            font-weight: 600;
+        }
+        /* Swiper 覆盖 */
+        .swiper-wrapper { transition-timing-function: linear !important; }
+        .swiper-slide { width: auto !important; }
+        .swiper-wrapper.centered {
+            justify-content: center;
+            gap: 20px;
+            display: flex;
+        }
+        .swiper-wrapper.centered .swiper-slide { margin-right: 0 !important; }
+
+        @media (max-width: 700px) {
+            body { padding: 1rem; }
+            .demo-section { padding: 1.2rem; border-radius: 1rem; }
+            .roller-item { padding: 10px 18px; font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Swiper 版本 -->
+<div class="demo-section">
+    <h2>
+        <span class="badge badge-swiper">Swiper</span>
+        Swiper 实现 — contentInsufficient: 'stop' + 居中
+    </h2>
+    <p class="desc">
+        使用 Swiper 11 内置 autoplay + loop。注意：Swiper 是 slide 级别过渡，非连续像素滚动。
+    </p>
+    <div id="swiperRoller" class="roller-container swiper">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide"><div class="roller-item">📌 重要公告</div></div>
+            <div class="swiper-slide"><div class="roller-item">🔔 系统维护通知</div></div>
+            <div class="swiper-slide"><div class="roller-item">📢 版本更新日志</div></div>
+        </div>
+    </div>
+    <div class="info-bar">
+        <span>状态：<span class="value" id="swiperStatus">初始化中…</span></span>
+        <span>原始尺寸：<span class="value" id="swiperOriginalSize">-</span></span>
+        <span>容器尺寸：<span class="value" id="swiperContainerSize">-</span></span>
+    </div>
+</div>
+
+<!-- InfiniteRoller 版本 -->
+<div class="demo-section">
+    <h2>
+        <span class="badge badge-native">InfiniteRoller</span>
+        InfiniteRoller 实现（对照）
+    </h2>
+    <p class="desc">
+        使用 rAF + translate3d 连续像素滚动，对比循环边界处的流畅度和闪烁情况。
+    </p>
+    <div id="nativeRoller" class="roller-container">
+        <div class="roller-item">📌 重要公告</div>
+        <div class="roller-item">🔔 系统维护通知</div>
+        <div class="roller-item">📢 版本更新日志</div>
+    </div>
+    <div class="info-bar">
+        <span>状态：<span class="value" id="nativeStatus">初始化中…</span></span>
+        <span>原始尺寸：<span class="value" id="nativeOriginalSize">-</span></span>
+        <span>容器尺寸：<span class="value" id="nativeContainerSize">-</span></span>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script src="infinite-roller.js"></script>
+<script>
+// ================================================================
+//  Swiper 版本 — 最少代码，仅用 autoplay + loop
+// ================================================================
+const swiperContainer = document.getElementById('swiperRoller');
+const GAP = 20;
+let swiper = null, ORIG_HTML = null;
+
+function onSwiperEnter() {
+    if (!swiper || swiper.destroyed) return;
+    swiper.autoplay.stop();
+    // 立即冻结当前过渡位置
+    swiper.setTransition(0);
+    swiper.setTranslate(swiper.getTranslate());
+}
+
+function onSwiperLeave() {
+    if (!swiper || swiper.destroyed) return;
+    // 恢复过渡，手动推进一次让 Swiper 同步状态，再启动 autoplay
+    swiper.setTransition(swiper.params.speed);
+    swiper.slideNext();
+    swiper.autoplay.start();
+}
+
+function initSwiper() {
+    if (swiper) {
+        swiper.el.removeEventListener('mouseenter', onSwiperEnter);
+        swiper.el.removeEventListener('mouseleave', onSwiperLeave);
+        swiper.destroy(true, true);
+        swiper = null;
+    }
+
+    const wrapper = swiperContainer.querySelector('.swiper-wrapper');
+    if (!ORIG_HTML) ORIG_HTML = wrapper.innerHTML;
+
+    wrapper.innerHTML = ORIG_HTML;
+
+    let cw = 0;
+    const items = wrapper.querySelectorAll('.roller-item');
+    items.forEach((el, i) => {
+        cw += el.offsetWidth;
+        if (i < items.length - 1) cw += GAP;
+    });
+    const vw = swiperContainer.offsetWidth;
+
+    document.getElementById('swiperOriginalSize').textContent = Math.round(cw) + 'px';
+    document.getElementById('swiperContainerSize').textContent = Math.round(vw) + 'px';
+    const status = document.getElementById('swiperStatus');
+
+    if (cw < vw) {
+        wrapper.classList.add('centered');
+        status.textContent = '⏸ 已停止，内容居中';
+        return;
+    }
+
+    wrapper.classList.remove('centered');
+    status.textContent = '▶ 正常滚动';
+
+    const sets = Math.ceil((vw * 2) / cw);
+    for (let i = 0; i < sets; i++) wrapper.insertAdjacentHTML('beforeend', ORIG_HTML);
+
+    swiper = new Swiper(swiperContainer, {
+        loop: true,
+        slidesPerView: 'auto',
+        spaceBetween: GAP,
+        speed: 3000,
+        allowTouchMove: false,
+        watchOverflow: false,
+        autoplay: { delay: 0, disableOnInteraction: false, stopOnLastSlide: false },
+    });
+
+    swiper.el.addEventListener('mouseenter', onSwiperEnter);
+    swiper.el.addEventListener('mouseleave', onSwiperLeave);
+}
+
+initSwiper();
+
+let t;
+window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(initSwiper, 150); });
+
+// ================================================================
+//  InfiniteRoller 版本
+// ================================================================
+new InfiniteRoller(document.getElementById('nativeRoller'), {
+    direction: 'horizontal',
+    gap: 20,
+    speed: 50,
+    pauseOnHover: true,
+    contentInsufficient: 'stop',
+    infoElements: {
+        status: '#nativeStatus',
+        origin: '#nativeOriginalSize',
+        contain: '#nativeContainerSize',
+    },
+});
+</script>
+</body>
+</html>

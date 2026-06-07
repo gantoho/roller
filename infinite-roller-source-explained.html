@@ -7,11 +7,13 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: system-ui, 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+            font-family: system-ui, 'Segoe UI', 'PingFang SC', Roboto, sans-serif;
             background: #0d1117;
+            color: #e6edf3;
             padding: 2rem;
             display: flex;
             justify-content: center;
+            line-height: 1.75;
         }
         .doc {
             max-width: 1000px;
@@ -22,75 +24,53 @@
             padding: 3rem 2.5rem;
             border: 1px solid #30363d;
         }
-        h1 { font-size: 2rem; margin-bottom: 0.3rem; color: #f0f6fc; }
+        h1 { font-size: 2rem; color: #f0f6fc; margin-bottom: 0.3rem; }
         .subtitle { color: #8b949e; font-size: 1rem; margin-bottom: 2.5rem; }
         h2 {
-            font-size: 1.4rem;
+            font-size: 1.3rem; color: #f0f6fc;
             margin: 2.5rem 0 1rem;
             padding-bottom: 0.5rem;
-            border-bottom: 2px solid #21262d;
-            color: #f0f6fc;
+            border-bottom: 1px solid #21262d;
         }
-        h3 {
-            font-size: 1.1rem;
-            margin: 1.5rem 0 0.5rem;
-            color: #e6edf3;
-        }
-        p { line-height: 1.8; color: #c9d1d9; margin-bottom: 0.8rem; }
-        ul, ol { padding-left: 1.5rem; margin-bottom: 1rem; }
-        li { line-height: 1.8; color: #c9d1d9; margin-bottom: 0.3rem; }
+        h3 { font-size: 1.05rem; color: #e6edf3; margin: 1.5rem 0 0.6rem; }
+        p { color: #c9d1d9; margin-bottom: 0.8rem; font-size: 0.95rem; }
         code {
-            background: #2d333b;
-            padding: 0.15rem 0.5rem;
-            border-radius: 6px;
+            background: #1c2128; color: #ffa657;
+            padding: 2px 6px; border-radius: 4px;
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
             font-size: 0.9em;
-            font-family: 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace;
-            color: #f778ba;
         }
         pre {
-            background: #0d1117;
-            color: #e6edf3;
-            padding: 1.2rem 1.5rem;
-            border-radius: 12px;
-            overflow-x: auto;
-            font-size: 0.9rem;
-            line-height: 1.6;
-            margin: 1rem 0 1.5rem;
-            tab-size: 4;
-            border: 1px solid #21262d;
+            background: #0d1117; border: 1px solid #30363d;
+            border-radius: 8px; padding: 1rem 1.2rem;
+            overflow-x: auto; margin: 0.8rem 0;
+            font-size: 0.85rem; line-height: 1.6;
         }
-        pre code { background: none; color: inherit; padding: 0; border-radius: 0; font-size: inherit; }
+        pre code { background: none; color: #c9d1d9; padding: 0; }
         table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 1rem 0 1.5rem;
-            font-size: 0.9rem;
+            width: 100%; border-collapse: collapse;
+            margin: 0.8rem 0; font-size: 0.88rem;
         }
         th, td {
-            border: 1px solid #30363d;
-            padding: 0.7rem 1rem;
-            text-align: left;
+            padding: 8px 14px; text-align: left;
+            border-bottom: 1px solid #21262d;
             vertical-align: top;
         }
-        th { background: #1c2128; font-weight: 600; color: #e6edf3; }
-        tr:nth-child(even) td { background: #0d1117; }
-        tr:nth-child(odd) td { background: #161b22; }
+        th { background: #1c2128; color: #c9d1d9; font-weight: 600; white-space: nowrap; }
+        td { color: #c9d1d9; }
         .highlight {
-            background: #1c2128;
-            border-left: 4px solid #58a6ff;
-            padding: 1rem 1.2rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-            color: #c9d1d9;
+            background: #1c2128; border-left: 3px solid #58a6ff;
+            border-radius: 0 6px 6px 0; padding: 0.8rem 1rem;
+            margin: 1rem 0; font-size: 0.9rem; color: #c9d1d9;
         }
         .highlight strong { color: #58a6ff; }
         .flow-chart {
             background: #0d1117;
             border: 1px solid #21262d;
-            border-radius: 12px;
+            border-radius: 8px;
             padding: 1.5rem;
             margin: 1rem 0 1.5rem;
-            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            font-family: 'Cascadia Code', 'Consolas', monospace;
             font-size: 0.85rem;
             line-height: 2;
             color: #e6edf3;
@@ -100,16 +80,18 @@
             background: #1c2128;
             color: #8b949e;
             font-size: 0.75rem;
-            padding: 0.1rem 0.4rem;
-            border-radius: 3px;
-            font-family: monospace;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Cascadia Code', monospace;
         }
+        ul, ol { color: #c9d1d9; padding-left: 1.5rem; margin-bottom: 0.8rem; font-size: 0.95rem; }
+        li { margin-bottom: 0.3rem; }
         hr { border: none; border-top: 1px solid #21262d; margin: 2rem 0; }
         @media (max-width: 700px) {
             body { padding: 1rem; }
             .doc { padding: 1.5rem 1rem; }
             table { font-size: 0.8rem; }
-            th, td { padding: 0.5rem 0.6rem; }
+            th, td { padding: 5px 8px; }
         }
     </style>
 </head>
@@ -117,15 +99,18 @@
 <div class="doc">
 
 <h1>InfiniteRoller 源码解析</h1>
-<p class="subtitle">逐段解读代码的设计思路、核心机制与实现细节</p>
+<p class="subtitle">逐段解读 rAF 版代码的设计思路、核心机制与实现细节（Transition / Animation 版共享相同上层逻辑）</p>
 
 <h2>一、整体架构概览</h2>
 
 <p>
-    InfiniteRoller 是一个 <strong>基于 class 的无限循环滚动引擎</strong>，全文约 530 行。
-    它的设计遵循一个清晰的<strong>初始化 → 测量 → 克隆 → 动画驱动</strong>流水线。
-    下面是完整的执行流程图：
+    InfiniteRoller 是一个 <strong>基于 class 的无限循环滚动引擎</strong>，提供三种动画引擎实现
+    （<code>InfiniteRoller</code> / <code>InfiniteRollerTransition</code> / <code>InfiniteRollerAnimation</code>）。
+    三个版本共享完全相同的公共 API 和上层逻辑，仅<strong>动画循环层</strong>不同。
+    本文以 rAF 版为例，逐段解读源码（约 800 行）。
 </p>
+
+<p>它的设计遵循一个清晰的<strong>初始化 → 测量 → 克隆 → 动画驱动</strong>流水线：</p>
 
 <div class="flow-chart">
 ┌─────────────────────────────────────────────────────────────────┐
@@ -181,6 +166,8 @@
     <tr><td>动画循环</td><td>407-448</td><td>rAF 核心：时间差→步长→偏移</td></tr>
     <tr><td>公共 API</td><td>454-535</td><td>play / pause / stop / refresh / destroy</td></tr>
     <tr><td>事件处理</td><td>541-572</td><td>悬停暂停恢复、resize 防抖</td></tr>
+    <tr><td>响应式断点</td><td>728-745</td><td>gapBreakpoints 自动计算 gap</td></tr>
+    <tr><td>状态元素更新</td><td>755-789</td><td>infoElements 自动更新 DOM</td></tr>
 </table>
 
 <h2>二、构造函数 — 配置合并与状态初始化</h2>
@@ -190,10 +177,32 @@
     this.container = container;
 
     // 合并默认配置                                                 // 55-69
-    const defaults = { direction:'horizontal', gap:20, speed:50, ... };
+    const defaults = {
+        direction:'horizontal', gap:20, speed:50,
+        autoStart:true, pauseOnHover:true,
+        minCloneMultiplier:3,
+        contentInsufficient:'scroll',    // 'scroll' | 'stop'
+        scrollThreshold:0,               // 滚动触发阈值
+        scrollThresholdFromGap:false,    // 阈值自动取 gap
+        onResize:null,                   // resize 回调
+        onRefresh:null,                  // refresh 回调
+        gapBreakpoints:null,             // 响应式断点
+        infoElements:null,               // 状态元素绑定
+        ...
+    };
     this.options = { ...defaults, ...options };
 
     // 校验 direction 和 contentInsufficient 合法性                  // 72-78
+
+    // 若启用 scrollThresholdFromGap 且用户未显式设置，自动取 gap
+    if (this.options.scrollThresholdFromGap && options.scrollThreshold === undefined) {
+        this.options.scrollThreshold = this.options.gap;
+    }
+
+    // 若启用 gapBreakpoints，根据当前窗口宽度计算 gap
+    if (this.options.gapBreakpoints) {
+        this.options.gap = this._resolveGapFromBreakpoints();
+    }
 
     // 内部状态变量                                                 // 81-93
     this.track = null;
@@ -441,15 +450,23 @@ destroy() // 销毁组件：断开所有监听、还原 DOM、释放内存      
 
 <h2>十、事件处理 — 悬停与自适应</h2>
 
-<pre><code>_handleHoverEnter() {                                               // 541
+<pre><code>_handleHoverEnter() {                                               // 709
     // 设置 isHoverPaused=true，_animationLoop 中检测到后会停止 rAF
 }
 
-_handleHoverLeave() {                                               // 550
+_handleHoverLeave() {                                               // 717
     // 设置 isHoverPaused=false，重启 rAF
 }
 
-_handleResize() {                                                   // 561
+_handleResize() {                                                   // 791
+    // 若配置了 gapBreakpoints，自动按窗口宽度更新 gap
+    if (this.options.gapBreakpoints) {
+        this.options.gap = this._resolveGapFromBreakpoints();       // 728-745
+    }
+    // onResize 钩子：允许在 refresh 前调整配置
+    if (typeof this.options.onResize === 'function') {
+        this.options.onResize.call(this);
+    }
     // 防抖：100ms 内多次 resize 只触发一次 refresh
     clearTimeout(this.resizeTimer);
     this.resizeTimer = setTimeout(() => this.refresh(), this.options.resizeDebounceMs);
@@ -458,10 +475,42 @@ _handleResize() {                                                   // 561
 <div class="highlight">
     <strong>设计思路：</strong>
     <p><strong>悬停暂停</strong>：使用一个独立的 <code>isHoverPaused</code> 标志位，而不是直接修改 <code>isPlaying</code>。这样悬停暂定和手动暂停互不干扰——用户手动暂停后鼠标移入移出不会意外重启动画。</p>
+    <p><strong>响应式断点（gapBreakpoints）</strong>：在 resize 处理中优先计算断点 gap，确保每次 refresh 前 gap 已更新。<code>_resolveGapFromBreakpoints()</code> 会根据当前 <code>window.innerWidth</code> 遍历断点对象，找到第一个 <code>width &lt;= threshold</code> 的匹配项并返回对应 gap 值。<code>default</code> 键作为兜底。</p>
     <p><strong>尺寸自适应</strong>：同时使用了 <code>ResizeObserver</code>（监听容器尺寸变化）和 <code>window resize</code> 事件（兼容某些 ResizeObserver 无法捕捉的场景）。两个触发源共享同一个防抖定时器，避免重复执行。</p>
+    <p><strong>onResize 钩子</strong>：在 refresh 前调用，允许用户动态修改配置（如根据窗口宽度切换 contentInsufficient 策略）。</p>
 </div>
 
-<h2>十一、总结：核心机制一句话</h2>
+<h2>十一、状态元素自动更新（infoElements）</h2>
+
+<pre><code>_updateInfoElements() {                                             // 755
+    const els = this.options.infoElements;
+    if (!els) return;
+
+    for (const [key, selector] of Object.entries(els)) {
+        const el = typeof selector === 'string' ? document.querySelector(selector) : selector;
+        if (!el) continue;
+
+        switch (key) {
+            case 'gap':      // 显示当前 gap 值
+            case 'status':   // 显示滚动/停止状态
+            case 'origin':   // 显示原始内容尺寸
+            case 'contain':  // 显示容器尺寸
+            case 'cssGap':   // 读取计算后的 CSS gap 值
+        }
+    }
+}</code></pre>
+
+<div class="highlight">
+    <strong>设计思路：</strong>
+    <p><code>infoElements</code> 提供了一种声明式的方式来绑定状态显示元素，避免用户在 onRefresh 回调中手动更新每个 DOM 元素。在 <code>_init()</code> 和 <code>refresh()</code> 末尾自动调用，用户只需要在配置中指定 <code>{ fieldName: '#selector' }</code>，库自动完成 textContent 更新。</p>
+    <p>支持两种取值方式：</p>
+    <ul>
+        <li>CSS 选择器字符串（通过 <code>document.querySelector</code> 查找）</li>
+        <li>直接传入 DOM 元素引用</li>
+    </ul>
+</div>
+
+<h2>十二、总结：核心机制一句话</h2>
 
 <div class="highlight">
     <strong>InfiniteRoller = 多份 DOM 克隆 + 单调递增偏移 + 取模映射 translate3d + 独立 margin</strong>
@@ -472,6 +521,8 @@ _handleResize() {                                                   // 561
         <li><strong>取模映射</strong> — 将无限增长的偏移映射到有限区间</li>
         <li><strong>独立 margin</strong> — 克隆时自动继承间距，边界无突变</li>
         <li><strong>rAF + translate3d</strong> — GPU 硬件加速，高性能动画</li>
+        <li><strong>gapBreakpoints</strong> — 响应式间距断点，自动按窗口宽度调整 gap</li>
+        <li><strong>infoElements</strong> — 声明式状态绑定，零代码自动更新状态显示</li>
     </ul>
 </div>
 

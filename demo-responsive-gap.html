@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InfiniteRoller — 响应式间距 & 居中示例</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, 'Segoe UI', 'PingFang SC', Roboto, sans-serif;
+            background: #0d1117;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3rem;
+        }
+        .demo-section {
+            max-width: 1000px;
+            width: 100%;
+            background: #161b22;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            border: 1px solid #30363d;
+        }
+        h2 { color: #f0f6fc; font-size: 1.3rem; margin-bottom: 0.3rem; }
+        .desc { color: #8b949e; font-size: 0.9rem; margin-bottom: 1.2rem; line-height: 1.6; }
+        .badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-weight: 500;
+            margin-right: 0.4rem;
+        }
+        .badge-margin { background: #0d2818; color: #3fb950; }
+        .badge-gap    { background: #1c2128; color: #58a6ff; }
+        .badge-stop   { background: #3d1c02; color: #d29922; }
+
+        /* ===== 滚动项基础样式 ===== */
+        .roller-item {
+            flex-shrink: 0;
+            padding: 12px 28px;
+            border-radius: 10px;
+            text-align: center;
+            white-space: nowrap;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        .roller-container {
+            overflow: hidden;
+            border-radius: 12px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+        }
+        /* 控制台 — 显示当前间距值 */
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding: 0.6rem 1rem;
+            background: #0d1117;
+            border-radius: 8px;
+            border: 1px solid #21262d;
+            font-size: 0.85rem;
+            color: #8b949e;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .info-bar .value {
+            color: #f0f6fc;
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            font-weight: 600;
+        }
+
+        /* ============================================================
+           SECTION 1 — MARGIN 版本（InfiniteRoller 内部 gap 实现）
+           ============================================================ */
+        .margin-roller .roller-item { background: #1f6feb; color: #fff; }
+
+        /* ============================================================
+           SECTION 2 — GAP 版本（CSS gap 实现）
+           ============================================================ */
+        .gap-roller .roller-item { background: #238636; color: #fff; }
+
+        /* CSS gap 响应式断点 */
+        @media (max-width: 600px)  { .gap-roller .infinite-track { gap: 6px; } }
+        @media (min-width: 601px) and (max-width: 1024px) { .gap-roller .infinite-track { gap: 16px; } }
+        @media (min-width: 1025px) { .gap-roller .infinite-track { gap: 30px; } }
+
+        /* ============================================================
+           SECTION 3 — contentInsufficient: 'stop' 居中
+           ============================================================ */
+        .stop-roller .roller-item { background: #9e6a03; color: #fff; }
+
+        /* ===== 响应式布局 ===== */
+        @media (max-width: 700px) {
+            body { padding: 1rem; }
+            .demo-section { padding: 1.2rem; border-radius: 1rem; }
+            .roller-item { padding: 10px 18px; font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ============================================================
+     SECTION 1 — MARGIN 版本
+     ============================================================ -->
+<div class="demo-section">
+    <h2>
+        <span class="badge badge-margin">Margin</span>
+        响应式间距 — InfiniteRoller 内部 gap 驱动
+    </h2>
+    <p class="desc">
+        通过 <code>gapBreakpoints</code> 配置断点，库自动按窗口宽度设置 <code>gap</code>。
+        断点：大屏 <strong>30px</strong> ｜ 中屏 <strong>16px</strong> ｜ 小屏 <strong>6px</strong>。
+        <code>infoElements</code> 自动更新信息栏。
+    </p>
+
+    <div id="marginRoller" class="roller-container margin-roller">
+        <div class="roller-item">🏆 前端架构</div>
+        <div class="roller-item">🚀 性能优化</div>
+        <div class="roller-item">⚡ 无限滚动</div>
+        <div class="roller-item">🎨 CSS 硬件加速</div>
+        <div class="roller-item">📦 智能拼接</div>
+        <div class="roller-item">🔄 无缝回绕</div>
+    </div>
+    <div class="info-bar">
+        <span>当前间距：<span class="value" id="marginGapDisplay">30px</span>（基于 margin）</span>
+        <span>断点状态：<span class="value" id="marginBreakpoint">大屏</span></span>
+    </div>
+</div>
+
+<!-- ============================================================
+     SECTION 2 — GAP 版本
+     ============================================================ -->
+<div class="demo-section">
+    <h2>
+        <span class="badge badge-gap">CSS Gap</span>
+        响应式间距 — CSS <code>gap</code> 驱动
+    </h2>
+    <p class="desc">
+        InfiniteRoller 配置 <code>gap: 0</code>（不产生 margin），由 CSS 媒体查询控制
+        <code>.infinite-track</code> 的 <code>gap</code> 属性。<code>infoElements.cssGap</code>
+        自动读取计算后的 CSS gap 值并显示。
+    </p>
+
+    <div id="gapRoller" class="roller-container gap-roller">
+        <div class="roller-item">🏆 前端架构</div>
+        <div class="roller-item">🚀 性能优化</div>
+        <div class="roller-item">⚡ 无限滚动</div>
+        <div class="roller-item">🎨 CSS 硬件加速</div>
+        <div class="roller-item">📦 智能拼接</div>
+        <div class="roller-item">🔄 无缝回绕</div>
+    </div>
+    <div class="info-bar">
+        <span>当前间距：<span class="value" id="gapGapDisplay">30px</span>（基于 CSS gap）</span>
+    </div>
+</div>
+
+<!-- ============================================================
+     SECTION 3 — contentInsufficient: 'stop' + 居中
+     ============================================================ -->
+<div class="demo-section">
+    <h2>
+        <span class="badge badge-stop">Stop + Center</span>
+        contentInsufficient: 'stop' — 内容不足时居中
+    </h2>
+    <p class="desc">
+        内容总宽度小于容器时，自动停止滚动并居中（最后一项右侧不留多余间距），
+        全部由库内置逻辑处理。拉宽/缩窄窗口观察状态切换。
+    </p>
+
+    <div id="stopRoller" class="roller-container stop-roller">
+        <div class="roller-item">📌 重要公告</div>
+        <div class="roller-item">🔔 系统维护通知</div>
+        <div class="roller-item">📢 版本更新日志</div>
+    </div>
+    <div class="info-bar">
+        <span>状态：<span class="value" id="stopStatus">初始化中…</span></span>
+        <span>原始尺寸：<span class="value" id="stopOriginalSize">-</span></span>
+        <span>容器尺寸：<span class="value" id="stopContainerSize">-</span></span>
+    </div>
+</div>
+
+<script src="infinite-roller.js"></script>
+<script>
+    // ================================================================
+    //  工具函数
+    // ================================================================
+
+    function getBreakpoint() {
+        const w = window.innerWidth;
+        if (w <= 600) return '小屏';
+        if (w <= 1024) return '中屏';
+        return '大屏';
+    }
+
+    // ================================================================
+    //  SECTION 1 — Margin 版本
+    //    gapBreakpoints + infoElements 自动更新 gap 与状态显示
+    //    仅需 onRefresh 更新一个断点名称即可
+    // ================================================================
+
+    const marginBpEl = document.getElementById('marginBreakpoint');
+
+    new InfiniteRoller(
+        document.getElementById('marginRoller'), {
+            direction: 'horizontal',
+            speed: 60,
+            pauseOnHover: true,
+            gapBreakpoints: { 600: 6, 1024: 16, default: 30 },
+            infoElements: { gap: '#marginGapDisplay' },
+            onRefresh() { marginBpEl.textContent = getBreakpoint(); },
+        }
+    );
+
+    // ================================================================
+    //  SECTION 2 — CSS Gap 版本
+    //    gap: 0 关闭 margin，CSS 媒体查询控制 gap
+    //    infoElements.cssGap 自动读取计算值
+    // ================================================================
+
+    new InfiniteRoller(
+        document.getElementById('gapRoller'), {
+            direction: 'horizontal',
+            gap: 0,
+            speed: 60,
+            pauseOnHover: true,
+            infoElements: { cssGap: '#gapGapDisplay' },
+        }
+    );
+
+    // ================================================================
+    //  SECTION 3 — contentInsufficient: 'stop' + 居中
+    //    infoElements 自动更新状态、原始尺寸、容器尺寸
+    //    零回调代码
+    // ================================================================
+
+    new InfiniteRoller(
+        document.getElementById('stopRoller'), {
+            direction: 'horizontal',
+            gap: 20,
+            speed: 50,
+            pauseOnHover: true,
+            contentInsufficient: 'stop',
+            infoElements: {
+                status:  '#stopStatus',
+                origin:  '#stopOriginalSize',
+                contain: '#stopContainerSize',
+            },
+        }
+    );
+</script>
+</body>
+</html>

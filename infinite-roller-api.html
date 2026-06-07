@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InfiniteRoller — API 文档</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: system-ui, 'Segoe UI', 'PingFang SC', Roboto, sans-serif;
+        background: #0d1117;
+        color: #e6edf3;
+        padding: 2rem;
+        display: flex;
+        justify-content: center;
+        line-height: 1.75;
+    }
+    .doc {
+        max-width: 960px;
+        width: 100%;
+        background: #161b22;
+        border-radius: 1.5rem;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        padding: 3rem 2.5rem;
+        border: 1px solid #30363d;
+    }
+    h1 { font-size: 2rem; color: #f0f6fc; margin-bottom: 0.3rem; }
+    .subtitle { color: #8b949e; font-size: 1rem; margin-bottom: 2.5rem; }
+    h2 {
+        font-size: 1.3rem; color: #f0f6fc;
+        margin: 2.5rem 0 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #21262d;
+    }
+    h3 { font-size: 1.05rem; color: #e6edf3; margin: 1.5rem 0 0.6rem; }
+    p { color: #c9d1d9; margin-bottom: 0.8rem; font-size: 0.95rem; }
+    code {
+        background: #1c2128; color: #ffa657;
+        padding: 2px 6px; border-radius: 4px;
+        font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        font-size: 0.9em;
+    }
+    pre {
+        background: #0d1117; border: 1px solid #30363d;
+        border-radius: 8px; padding: 1rem 1.2rem;
+        overflow-x: auto; margin: 0.8rem 0;
+        font-size: 0.85rem; line-height: 1.6;
+    }
+    pre code { background: none; color: #c9d1d9; padding: 0; }
+    table {
+        width: 100%; border-collapse: collapse;
+        margin: 0.8rem 0; font-size: 0.88rem;
+    }
+    th, td {
+        padding: 8px 14px; text-align: left;
+        border-bottom: 1px solid #21262d;
+        vertical-align: top;
+    }
+    th { background: #1c2128; color: #c9d1d9; font-weight: 600; white-space: nowrap; }
+    td { color: #c9d1d9; }
+    td.type { color: #8b949e; font-family: monospace; font-size: 0.85rem; white-space: nowrap; }
+    td.default { color: #58a6ff; font-family: monospace; font-size: 0.85rem; }
+    .note {
+        background: #1c2128; border-left: 3px solid #58a6ff;
+        border-radius: 0 6px 6px 0; padding: 0.8rem 1rem;
+        margin: 1rem 0; font-size: 0.9rem; color: #c9d1d9;
+    }
+    .warn-note {
+        background: #1c2128; border-left: 3px solid #d29922;
+        border-radius: 0 6px 6px 0; padding: 0.8rem 1rem;
+        margin: 1rem 0; font-size: 0.9rem; color: #c9d1d9;
+    }
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
+    .tag-raf { background: #9e6a0333; color: #d29922; }
+    .tag-trans { background: #1f6feb33; color: #58a6ff; }
+    .tag-anim { background: #23863633; color: #3fb950; }
+    .sig { font-family: 'Cascadia Code', monospace; font-size: 0.9rem; color: #7ee787; }
+    ul, ol { color: #c9d1d9; padding-left: 1.5rem; margin-bottom: 0.8rem; font-size: 0.95rem; }
+    li { margin-bottom: 0.3rem; }
+</style>
+</head>
+<body>
+<div class="doc">
+
+<h1>InfiniteRoller API 文档</h1>
+<p class="subtitle">
+    <span class="tag tag-raf">rAF</span>
+    <span class="tag tag-trans">CSS Transition</span>
+    <span class="tag tag-anim">CSS Animation</span>
+    三个类共享完全相同的公共 API，仅构造函数名不同
+</p>
+
+<!-- ============================================================ -->
+<h2>1. 快速开始</h2>
+
+<pre><code>&lt;!-- HTML: 将需要滚动的元素直接放入容器 --&gt;
+&lt;div id="myRoller"&gt;
+    &lt;div class="item"&gt;公告 1&lt;/div&gt;
+    &lt;div class="item"&gt;公告 2&lt;/div&gt;
+    &lt;div class="item"&gt;公告 3&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script src="infinite-roller.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+const roller = new InfiniteRoller(document.getElementById('myRoller'), {
+    direction: 'horizontal',
+    gap: 20,
+    speed: 50,
+});
+&lt;/script&gt;</code></pre>
+
+<div class="note">
+    <strong>三个类</strong>：<code>InfiniteRoller</code>（rAF）、<code>InfiniteRollerTransition</code>、<code>InfiniteRollerAnimation</code>。
+    除核心动画引擎不同外，构造函数参数、方法、回调完全一致，替换类名即可切换。
+</div>
+
+<!-- ============================================================ -->
+<h2>2. 构造函数</h2>
+
+<h3>2.1 参数</h3>
+<p class="sig">new InfiniteRoller(container, options)</p>
+<p class="sig">new InfiniteRollerTransition(container, options)</p>
+<p class="sig">new InfiniteRollerAnimation(container, options)</p>
+
+<table>
+    <thead>
+        <tr><th>参数</th><th>类型</th><th>必需</th><th>说明</th></tr>
+    </thead>
+    <tbody>
+        <tr><td><code>container</code></td><td class="type">HTMLElement</td><td>是</td><td>滚动容器元素，其 <code>overflow</code> 将被设为 <code>hidden</code></td></tr>
+        <tr><td><code>options</code></td><td class="type">Object</td><td>否</td><td>配置项对象，见下方</td></tr>
+    </tbody>
+</table>
+
+<h3>2.2 配置项</h3>
+
+<table>
+    <thead>
+        <tr><th style="width:180px">选项</th><th style="width:100px">类型</th><th style="width:100px">默认值</th><th>说明</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>direction</code></td>
+            <td class="type">string</td>
+            <td class="default">'horizontal'</td>
+            <td>滚动方向：<code>'horizontal'</code> | <code>'vertical'</code></td>
+        </tr>
+        <tr>
+            <td><code>gap</code></td>
+            <td class="type">number</td>
+            <td class="default">20</td>
+            <td>每项之间的间距（px），通过独立 margin 实现</td>
+        </tr>
+        <tr>
+            <td><code>speed</code></td>
+            <td class="type">number</td>
+            <td class="default">50</td>
+            <td>滚动速度（像素/秒）</td>
+        </tr>
+        <tr>
+            <td><code>autoStart</code></td>
+            <td class="type">boolean</td>
+            <td class="default">true</td>
+            <td>是否在初始化后自动开始滚动</td>
+        </tr>
+        <tr>
+            <td><code>pauseOnHover</code></td>
+            <td class="type">boolean</td>
+            <td class="default">true</td>
+            <td>鼠标悬停时是否暂停滚动</td>
+        </tr>
+        <tr>
+            <td><code>minCloneMultiplier</code></td>
+            <td class="type">number</td>
+            <td class="default">3</td>
+            <td>最小克隆倍数，轨道总长至少为原始尺寸的 N 倍</td>
+        </tr>
+        <tr>
+            <td><code>contentInsufficient</code></td>
+            <td class="type">string</td>
+            <td class="default">'scroll'</td>
+            <td>内容总尺寸小于容器尺寸时的策略：<ul style="margin: 4px 0 0 16px;"><li><code>'scroll'</code> — 继续滚动，自动克隆填满容器</li><li><code>'stop'</code> — 停止滚动，内容居中显示</li></ul></td>
+        </tr>
+        <tr>
+            <td><code>scrollThreshold</code></td>
+            <td class="type">number</td>
+            <td class="default">0</td>
+            <td>滚动触发阈值（px）。内容 ≥ 容器 - 阈值×2 时触发滚动，确保两侧保留阈值间距</td>
+        </tr>
+        <tr>
+            <td><code>scrollThresholdFromGap</code></td>
+            <td class="type">boolean</td>
+            <td class="default">false</td>
+            <td>若为 <code>true</code>，<code>scrollThreshold</code> 自动取 <code>gap</code> 的值</td>
+        </tr>
+        <tr>
+            <td><code>gapBreakpoints</code></td>
+            <td class="type">Object</td>
+            <td class="default">null</td>
+            <td>响应式断点配置，见下方 <a href="#gap-breakpoints">gapBreakpoints</a></td>
+        </tr>
+        <tr>
+            <td><code>infoElements</code></td>
+            <td class="type">Object</td>
+            <td class="default">null</td>
+            <td>自动更新状态元素，见下方 <a href="#info-elements">infoElements</a></td>
+        </tr>
+        <tr>
+            <td><code>cloneIdSuffix</code></td>
+            <td class="type">boolean</td>
+            <td class="default">true</td>
+            <td>克隆元素时是否自动给 id 添加唯一后缀避免冲突</td>
+        </tr>
+        <tr>
+            <td><code>resizeDebounceMs</code></td>
+            <td class="type">number</td>
+            <td class="default">100</td>
+            <td>resize 防抖间隔（毫秒）</td>
+        </tr>
+    </tbody>
+</table>
+
+<h3 id="rAF-only">2.3 rAF 专属配置项</h3>
+<p>以下选项仅对 <code>InfiniteRoller</code>（rAF 版）有效：</p>
+<table>
+    <thead>
+        <tr><th style="width:180px">选项</th><th style="width:100px">类型</th><th style="width:100px">默认值</th><th>说明</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>stepMaxRatio</code></td>
+            <td class="type">number</td>
+            <td class="default">0.5</td>
+            <td>单帧最大步长占原始尺寸比例，防止切后台后跳跃</td>
+        </tr>
+        <tr>
+            <td><code>precisionThreshold</code></td>
+            <td class="type">number</td>
+            <td class="default">1e8</td>
+            <td>偏移量超过此值时主动取模，防止浮点精度丢失</td>
+        </tr>
+        <tr>
+            <td><code>maxDeltaTime</code></td>
+            <td class="type">number</td>
+            <td class="default">0.05</td>
+            <td>单帧最大时间差（秒），防止切后台后的超大步长</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ============================================================ -->
+<h2>3. 回调钩子</h2>
+
+<table>
+    <thead>
+        <tr><th style="width:120px">回调</th><th style="width:100px">类型</th><th>触发时机</th></tr>
+    </thead>
+    <tbody>
+        <tr><td><code>onPlay</code></td><td class="type">Function</td><td>调用 <code>play()</code> 时</td></tr>
+        <tr><td><code>onPause</code></td><td class="type">Function</td><td>调用 <code>pause()</code> 时</td></tr>
+        <tr><td><code>onDestroy</code></td><td class="type">Function</td><td>调用 <code>destroy()</code> 时</td></tr>
+        <tr><td><code>onRefresh</code></td><td class="type">Function</td><td><code>refresh()</code> 完成时（含初始化和 resize）</td></tr>
+        <tr><td><code>onResize</code></td><td class="type">Function</td><td>resize 触发、<code>refresh()</code> 调用之前</td></tr>
+    </tbody>
+</table>
+
+<pre><code>const roller = new InfiniteRoller(container, {
+    onRefresh() {
+        console.log('刷新完成，当前内容宽度:', this._getContentWidth());
+    },
+    onResize() {
+        // 可在 refresh 前动态调整配置
+        this.options.speed = window.innerWidth &lt; 600 ? 30 : 50;
+    },
+});</code></pre>
+
+<!-- ============================================================ -->
+<h2 id="gap-breakpoints">4. gapBreakpoints — 响应式断点</h2>
+
+<p>根据窗口宽度自动调整间距。格式：<code>{ 阈值: 间距, default: 兜底间距 }</code>。</p>
+
+<pre><code>const roller = new InfiniteRoller(container, {
+    gapBreakpoints: {
+        600: 6,      // 窗口宽度 ≤ 600px 时 gap = 6px
+        1024: 16,    // 窗口宽度 ≤ 1024px 时 gap = 16px
+        default: 30, // 其他情况 gap = 30px
+    },
+});</code></pre>
+
+<div class="note">
+    断点按阈值升序匹配，找到第一个 <code>窗口宽度 ≤ 阈值</code> 即停止。若都不匹配则使用 <code>default</code>。
+</div>
+
+<!-- ============================================================ -->
+<h2 id="info-elements">5. infoElements — 自动更新状态元素</h2>
+
+<p>通过 CSS 选择器指定 DOM 元素，库会自动更新其文本内容（无需手动操作 DOM）。</p>
+
+<pre><code>&lt;!-- HTML --&gt;
+&lt;span id="gapVal"&gt;&lt;/span&gt;
+&lt;span id="statusVal"&gt;&lt;/span&gt;
+&lt;span id="originVal"&gt;&lt;/span&gt;
+&lt;span id="containVal"&gt;&lt;/span&gt;
+
+&lt;script&gt;
+const roller = new InfiniteRoller(container, {
+    infoElements: {
+        gap:     '#gapVal',      // 当前 gap 值
+        status:  '#statusVal',   // 当前状态文本
+        origin:  '#originVal',   // 原始内容尺寸
+        contain: '#containVal',  // 容器尺寸
+    },
+});
+&lt;/script&gt;</code></pre>
+
+<table>
+    <thead>
+        <tr><th style="width:80px">键</th><th>自动更新的值</th></tr>
+    </thead>
+    <tbody>
+        <tr><td><code>gap</code></td><td>当前 gap 值（如 <code>"20px"</code>）</td></tr>
+        <tr><td><code>status</code></td><td><code>"⏸ 已停止，内容居中"</code> 或 <code>"▶ 正常滚动"</code> 或 <code>"⏳ 测量中…"</code></td></tr>
+        <tr><td><code>origin</code></td><td>原始内容尺寸（如 <code>"450px"</code>）</td></tr>
+        <tr><td><code>contain</code></td><td>容器尺寸（如 <code>"800px"</code>）</td></tr>
+    </tbody>
+</table>
+
+<!-- ============================================================ -->
+<h2>6. 实例方法</h2>
+
+<h3>6.1 play()</h3>
+<p class="sig">roller.play()</p>
+<p>开始滚动。若内容不足且 <code>contentInsufficient: 'stop'</code>，则不会启动。</p>
+
+<h3>6.2 pause()</h3>
+<p class="sig">roller.pause()</p>
+<p>暂停滚动，保留当前位置。</p>
+
+<h3>6.3 stop()</h3>
+<p class="sig">roller.stop()</p>
+<p>停止滚动并重置位置到起点。</p>
+
+<h3>6.4 refresh()</h3>
+<p class="sig">roller.refresh()</p>
+<p>刷新组件：重新读取内容布局、重新计算克隆份数、更新居中状态。适用于窗口 resize 或动态增删内容后调用。</p>
+<div class="note">
+    库内部已自动监听 <code>ResizeObserver</code> + <code>window.resize</code>，通常无需手动调用。
+</div>
+
+<h3>6.5 destroy()</h3>
+<p class="sig">roller.destroy()</p>
+<p>销毁组件：停止动画、移除事件监听、断开 ResizeObserver、还原 DOM 结构。</p>
+
+<!-- ============================================================ -->
+<h2>7. 实例属性（只读）</h2>
+
+<table>
+    <thead>
+        <tr><th style="width:150px">属性</th><th>说明</th></tr>
+    </thead>
+    <tbody>
+        <tr><td><code>roller.container</code></td><td>滚动容器 DOM 元素</td></tr>
+        <tr><td><code>roller.track</code></td><td>内部滚动轨道 DOM 元素</td></tr>
+        <tr><td><code>roller.originalItems</code></td><td>原始子元素数组（非克隆）</td></tr>
+        <tr><td><code>roller.originalSize</code></td><td>原始一份内容的总尺寸（px）</td></tr>
+        <tr><td><code>roller.containerSize</code></td><td>容器可视区尺寸（px）</td></tr>
+        <tr><td><code>roller.isPlaying</code></td><td>是否正在播放</td></tr>
+        <tr><td><code>roller.destroyed</code></td><td>是否已销毁</td></tr>
+        <tr><td><code>roller.options</code></td><td>当前配置对象（可修改）</td></tr>
+    </tbody>
+</table>
+
+<!-- ============================================================ -->
+<h2>8. 完整示例</h2>
+
+<pre><code>&lt;div id="roll"&gt;
+    &lt;div class="item"&gt;🎯 公告一&lt;/div&gt;
+    &lt;div class="item"&gt;📢 公告二&lt;/div&gt;
+    &lt;div class="item"&gt;🔔 公告三&lt;/div&gt;
+&lt;/div&gt;
+&lt;button onclick="roller.pause()"&gt;暂停&lt;/button&gt;
+&lt;button onclick="roller.play()"&gt;播放&lt;/button&gt;
+&lt;span id="status"&gt;&lt;/span&gt;
+
+&lt;script src="infinite-roller.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+const roller = new InfiniteRoller(document.getElementById('roll'), {
+    direction: 'horizontal',
+    gap: 24,
+    speed: 60,
+    pauseOnHover: true,
+    contentInsufficient: 'stop',
+    scrollThresholdFromGap: true,
+    infoElements: { status: '#status' },
+    onRefresh() {
+        console.log('内容宽度:', this.originalSize, '容器宽度:', this.containerSize);
+    },
+});
+&lt;/script&gt;</code></pre>
+
+<!-- ============================================================ -->
+<h2>9. 三版本差异速查</h2>
+
+<table>
+    <thead>
+        <tr><th>特性</th><th><span class="tag tag-raf">rAF</span></th><th><span class="tag tag-trans">Transition</span></th><th><span class="tag tag-anim">Animation</span></th></tr>
+    </thead>
+    <tbody>
+        <tr><td>类名</td><td><code>InfiniteRoller</code></td><td><code>InfiniteRollerTransition</code></td><td><code>InfiniteRollerAnimation</code></td></tr>
+        <tr><td>JS 文件</td><td><code>infinite-roller.js</code></td><td><code>infinite-roller-transition.js</code></td><td><code>infinite-roller-animation.js</code></td></tr>
+        <tr><td>公共 API</td><td>完全一致</td><td>完全一致</td><td>完全一致</td></tr>
+        <tr><td>专属配置</td><td><code>stepMaxRatio</code><br><code>precisionThreshold</code><br><code>maxDeltaTime</code></td><td>无</td><td>无</td></tr>
+        <tr><td>暂停方式</td><td><code>cancelAnimationFrame</code></td><td>冻结 transform + 计算剩余时间</td><td><code>animationPlayState</code></td></tr>
+        <tr><td>适用场景</td><td>需要精确控制步长</td><td>低功耗 / 匀速</td><td>最简单实现</td></tr>
+    </tbody>
+</table>
+
+<div class="warn-note">
+    <strong>注意</strong>：三个版本共享同一个页面时，各自引入对应的 JS 文件即可，类名不会冲突。API 完全兼容，替换类名即可切换引擎。
+</div>
+
+</div>
+</body>
+</html>

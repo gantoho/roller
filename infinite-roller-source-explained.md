@@ -58,6 +58,8 @@ constructor(container, options)
 | 动画循环 | rAF 核心：时间差 → 步长 → 偏移 |
 | 公共 API | play / pause / stop / refresh / destroy |
 | 事件处理 | 悬停暂停恢复、resize 防抖 |
+| 响应式断点 | gapBreakpoints 自动计算 gap |
+| 状态元素更新 | infoElements 自动更新 DOM |
 
 ---
 
@@ -69,10 +71,32 @@ constructor(container, options = {}) {
     this.container = container;
 
     // 合并默认配置
-    const defaults = { direction:'horizontal', gap:20, speed:50, ... };
+    const defaults = {
+        direction:'horizontal', gap:20, speed:50,
+        autoStart:true, pauseOnHover:true,
+        minCloneMultiplier:3,
+        contentInsufficient:'scroll',    // 'scroll' | 'stop'
+        scrollThreshold:0,               // 滚动触发阈值
+        scrollThresholdFromGap:false,    // 阈值自动取 gap
+        onResize:null,                   // resize 回调
+        onRefresh:null,                  // refresh 回调
+        gapBreakpoints:null,             // 响应式断点
+        infoElements:null,               // 状态元素绑定
+        ...
+    };
     this.options = { ...defaults, ...options };
 
     // 校验 direction 和 contentInsufficient 合法性
+
+    // 若启用 scrollThresholdFromGap 且用户未显式设置，自动取 gap
+    if (this.options.scrollThresholdFromGap && options.scrollThreshold === undefined) {
+        this.options.scrollThreshold = this.options.gap;
+    }
+
+    // 若启用 gapBreakpoints，根据当前窗口宽度计算 gap
+    if (this.options.gapBreakpoints) {
+        this.options.gap = this._resolveGapFromBreakpoints();
+    }
 
     // 内部状态变量
     this.track = null;
@@ -363,6 +387,14 @@ _handleHoverLeave() {
 }
 
 _handleResize() {
+    // 若配置了 gapBreakpoints，自动按窗口宽度更新 gap
+    if (this.options.gapBreakpoints) {
+        this.options.gap = this._resolveGapFromBreakpoints();
+    }
+    // onResize 钩子：允许在 refresh 前调整配置
+    if (typeof this.options.onResize === 'function') {
+        this.options.onResize.call(this);
+    }
     // 防抖：100ms 内多次 resize 只触发一次 refresh
     clearTimeout(this.resizeTimer);
     this.resizeTimer = setTimeout(() => this.refresh(), this.options.resizeDebounceMs);
@@ -373,11 +405,47 @@ _handleResize() {
 >
 > **悬停暂停**：使用一个独立的 `isHoverPaused` 标志位，而不是直接修改 `isPlaying`。这样悬停暂定和手动暂停互不干扰——用户手动暂停后鼠标移入移出不会意外重启动画。
 >
+> **响应式断点（gapBreakpoints）**：在 resize 处理中优先计算断点 gap，确保每次 refresh 前 gap 已更新。`_resolveGapFromBreakpoints()` 会根据当前 `window.innerWidth` 遍历断点对象，找到第一个 `width <= threshold` 的匹配项并返回对应 gap 值。`default` 键作为兜底。
+>
 > **尺寸自适应**：同时使用了 `ResizeObserver`（监听容器尺寸变化）和 `window resize` 事件（兼容某些 ResizeObserver 无法捕捉的场景）。两个触发源共享同一个防抖定时器，避免重复执行。
+>
+> **onResize 钩子**：在 refresh 前调用，允许用户动态修改配置（如根据窗口宽度切换 contentInsufficient 策略）。
 
 ---
 
-## 十一、总结：核心机制一句话
+## 十一、状态元素自动更新（infoElements）
+
+```js
+_updateInfoElements() {
+    const els = this.options.infoElements;
+    if (!els) return;
+
+    for (const [key, selector] of Object.entries(els)) {
+        const el = typeof selector === 'string' ? document.querySelector(selector) : selector;
+        if (!el) continue;
+
+        switch (key) {
+            case 'gap':      // 显示当前 gap 值
+            case 'status':   // 显示滚动/停止状态
+            case 'origin':   // 显示原始内容尺寸
+            case 'contain':  // 显示容器尺寸
+            case 'cssGap':   // 读取计算后的 CSS gap 值
+        }
+    }
+}
+```
+
+> **设计思路：**
+>
+> `infoElements` 提供了一种声明式的方式来绑定状态显示元素，避免用户在 onRefresh 回调中手动更新每个 DOM 元素。在 `_init()` 和 `refresh()` 末尾自动调用，用户只需要在配置中指定 `{ fieldName: '#selector' }`，库自动完成 textContent 更新。
+>
+> 支持两种取值方式：
+> - CSS 选择器字符串（通过 `document.querySelector` 查找）
+> - 直接传入 DOM 元素引用
+
+---
+
+## 十二、总结：核心机制一句话
 
 > **InfiniteRoller = 多份 DOM 克隆 + 单调递增偏移 + 取模映射 translate3d + 独立 margin**
 >
@@ -388,6 +456,8 @@ _handleResize() {
 > - **取模映射** — 将无限增长的偏移映射到有限区间
 > - **独立 margin** — 克隆时自动继承间距，边界无突变
 > - **rAF + translate3d** — GPU 硬件加速，高性能动画
+> - **gapBreakpoints** — 响应式间距断点，自动按窗口宽度调整 gap
+> - **infoElements** — 声明式状态绑定，零代码自动更新状态显示
 
 ---
 
